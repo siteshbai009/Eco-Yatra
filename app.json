@@ -1,40 +1,36 @@
 {
   "expo": {
-    "name": "gietgrivance",
-    "slug": "gietgrivance",
+    "name": "GIET Grievance",                
+    "slug": "giet-grievance-portal-2024",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "gietgrivance",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.giet.grievance.portal",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.sitesh009.gietgrivance"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#6366F1"
+      }
     },
     "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "bundler": "metro"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
@@ -42,7 +38,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "7935bcdd-9dec-4f2c-ae39-2c9767fd8ee5"
+        "projectId": "8e8bc6b2-02fc-4e2b-a5c4-83194f460bbd"
       }
     }
   }
