@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   Modal,
+  Platform,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -21,6 +22,7 @@ export default function ProfileScreen() {
   const router = useRouter();
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
     name: user.name || '',
     email: user.email || '',
@@ -45,23 +47,66 @@ export default function ProfileScreen() {
     loadProfile();
   }, []);
 
-  // SIMPLE WORKING LOGOUT FUNCTION
-  const handleLogout = () => {
-    console.log('Logout button clicked!');
-    Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Log Out',
-          onPress: () => {
-            console.log('User confirmed logout');
-            router.push('/login');
-          }
-        }
-      ]
-    );
+  const handleLogoutPress = () => {
+    console.log('Logout button pressed!');
+    
+    // For web, use custom modal; for mobile, use Alert
+    if (Platform.OS === 'web') {
+      setLogoutModalVisible(true);
+    } else {
+      Alert.alert(
+        'Log Out',
+        'Are you sure you want to log out?',
+        [
+          { 
+            text: 'Cancel', 
+            style: 'cancel',
+          },
+          {
+            text: 'Log Out',
+            style: 'destructive',
+            onPress: performLogout,
+          },
+        ]
+      );
+    }
+  };
+
+  const performLogout = async () => {
+    try {
+      console.log('Starting logout process...');
+      
+      // Clear all user data from AsyncStorage
+      await AsyncStorage.multiRemove(['userProfile', 'isLoggedIn']);
+      console.log('AsyncStorage cleared');
+      
+      // Reset user context to default values
+      updateUser({
+        name: 'Student Name',
+        email: 'student@giet.edu',
+        role: 'Student',
+        department: 'Computer Science',
+        avatar: 'SN'
+      });
+      console.log('User context reset');
+      
+      // Close modal if on web
+      setLogoutModalVisible(false);
+      
+      // Navigate to login screen
+      setTimeout(() => {
+        console.log('Navigating to login...');
+        router.replace('/login');
+      }, 100);
+      
+    } catch (error) {
+      console.error('Logout error:', error);
+      if (Platform.OS === 'web') {
+        alert('Failed to log out. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to log out. Please try again.');
+      }
+    }
   };
 
   const handleEditProfile = () => {
@@ -93,7 +138,7 @@ export default function ProfileScreen() {
       const updatedProfile = {
         ...currentData,
         ...editForm,
-        password: currentData.password, // Keep the original password
+        password: currentData.password,
       };
       
       // Save to AsyncStorage
@@ -177,10 +222,10 @@ export default function ProfileScreen() {
             </View>
           </View>
           
-          {/* LOGOUT BUTTON - GUARANTEED TO WORK */}
+          {/* LOGOUT BUTTON - WEB & MOBILE COMPATIBLE */}
           <TouchableOpacity
             style={styles.logoutCard}
-            onPress={handleLogout}
+            onPress={handleLogoutPress}
             activeOpacity={0.7}
           >
             <View style={styles.optionCard}>
@@ -270,6 +315,40 @@ export default function ProfileScreen() {
                     <Feather name="save" size={20} color="#FFF" />
                     <Text style={styles.saveText}>Save Changes</Text>
                   </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Logout Confirmation Modal (for Web) */}
+        <Modal
+          visible={isLogoutModalVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setLogoutModalVisible(false)}
+        >
+          <View style={styles.logoutModalOverlay}>
+            <View style={styles.logoutModalContent}>
+              <View style={styles.logoutIconContainer}>
+                <Feather name="log-out" size={32} color="#EF4444" />
+              </View>
+              <Text style={styles.logoutModalTitle}>Log Out</Text>
+              <Text style={styles.logoutModalMessage}>
+                Are you sure you want to log out?
+              </Text>
+              <View style={styles.logoutModalButtons}>
+                <TouchableOpacity
+                  style={[styles.logoutModalButton, styles.cancelButton]}
+                  onPress={() => setLogoutModalVisible(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.logoutModalButton, styles.confirmButton]}
+                  onPress={performLogout}
+                >
+                  <Text style={styles.confirmButtonText}>Log Out</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -506,6 +585,71 @@ const styles = StyleSheet.create({
   saveText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: 'white',
+  },
+  // Logout Modal Styles
+  logoutModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  logoutModalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  logoutIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  logoutModalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  logoutModalMessage: {
+    fontSize: 16,
+    color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  logoutModalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  logoutModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F1F5F9',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  confirmButton: {
+    backgroundColor: '#EF4444',
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: 'white',
   },
 });

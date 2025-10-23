@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface User {
@@ -12,6 +13,7 @@ interface UserContextType {
   user: User;
   updateUser: (userData: Partial<User>) => void;
   greeting: string;
+  logout: () => Promise<void>;
 }
 
 const defaultUser: User = {
@@ -25,14 +27,15 @@ const defaultUser: User = {
 const UserContext = createContext<UserContextType>({
   user: defaultUser,
   updateUser: () => {},
-  greeting: 'Good Morning'
+  greeting: 'Good Morning',
+  logout: async () => {}
 });
 
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User>(defaultUser);
-  const [greeting, setGreeting] = useState<string>('Good Morning');
+  const [greeting, setGreeting] = useState('Good Morning');
 
   // Update greeting based on time
   useEffect(() => {
@@ -44,6 +47,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateUser = (userData: Partial<User>): void => {
     const newUser = { ...user, ...userData };
     setUser(newUser);
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await AsyncStorage.removeItem('userProfile');
+      await AsyncStorage.removeItem('isLoggedIn');
+      setUser(defaultUser);
+    } catch (error) {
+      console.error('Error clearing user data:', error);
+      throw error;
+    }
   };
 
   const updateGreeting = (): void => {
@@ -68,11 +82,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <UserContext.Provider value={{
-      user: userWithInitials,
-      updateUser,
-      greeting
-    }}>
+    <UserContext.Provider value={{ user: userWithInitials, updateUser, greeting, logout }}>
       {children}
     </UserContext.Provider>
   );

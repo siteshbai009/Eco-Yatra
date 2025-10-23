@@ -3,58 +3,151 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Image,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-
+// Authorized users - All CSE Department
+const AUTHORIZED_USERS = [
+  {
+    email: 'swarnapravaparida2004@gmail.com',
+    password: 'Swarnaprava@123',
+    name: 'Swarnaprava Parida',
+    department: 'Computer Science & Engineering (CSE)',
+  },
+  {
+    email: 'bijayinipanda2004@gmail.com',
+    password: 'Bijayini@123',
+    name: 'Bijayini Panda',
+    department: 'Computer Science & Engineering (CSE)',
+  },
+  {
+    email: 'mousumiprabharout@gmail.com',
+    password: 'Mousumi@123',
+    name: 'Mousumi Prabha Rout',
+    department: 'Computer Science & Engineering (CSE)',
+  },
+  {
+    email: 'sranjan41509@gmail.com',
+    password: 'Soumyaranjan@123',
+    name: 'Soumya Ranjan',
+    department: 'Computer Science & Engineering (CSE)',
+  },
+  {
+    email: 'siteshbai9975@gmail.com',
+    password: 'Sitesh@123',
+    name: 'Sitesh Bai',
+    department: 'Computer Science & Engineering (CSE)',
+  },
+];
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'error' });
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [slideAnim] = useState(new Animated.Value(100));
   const router = useRouter();
 
-  const handleLogin = async () => {
-    console.log('Login button pressed'); // Debug log
+  const showToast = (message: string, type: 'error' | 'success' = 'error') => {
+    setToast({ visible: true, message, type });
     
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    setTimeout(() => {
+      hideToast();
+    }, 3000);
+  };
+
+  const hideToast = () => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 100,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setToast({ visible: false, message: '', type: 'error' });
+    });
+  };
+
+  const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill all fields');
+      showToast('Please fill all fields');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showToast('Please enter a valid email address');
       return;
     }
 
     setLoading(true);
-    console.log('Attempting login with:', email); // Debug log
-    
+
     try {
-      const userData = await AsyncStorage.getItem('userProfile');
-      console.log('Stored user data:', userData); // Debug log
-      
-      if (userData) {
-        const user = JSON.parse(userData);
-        console.log('Parsed user:', user); // Debug log
-        
-        if (user.email.toLowerCase() === email.toLowerCase().trim() && user.password === password) {
-          await AsyncStorage.setItem('isLoggedIn', 'true');
-          console.log('Login successful, navigating to tabs'); // Debug log
-          router.replace('/(tabs)');
-        } else {
-          console.log('Invalid credentials'); // Debug log
-          Alert.alert('Error', 'Invalid email or password');
-        }
-      } else {
-        console.log('No user data found'); // Debug log
-        Alert.alert('Error', 'No account found. Please sign up first.');
+      const authorizedUser = AUTHORIZED_USERS.find(
+        user => user.email.toLowerCase() === email.toLowerCase().trim()
+      );
+
+      if (!authorizedUser) {
+        showToast('Access denied. Contact admin for access');
+        setLoading(false);
+        return;
       }
+
+      if (authorizedUser.password !== password) {
+        showToast('Invalid password. Please try again');
+        setLoading(false);
+        return;
+      }
+
+      const userData = {
+        id: Date.now().toString(),
+        name: authorizedUser.name,
+        email: authorizedUser.email,
+        role: 'Student',
+        department: authorizedUser.department,
+        password: authorizedUser.password,
+      };
+
+      await AsyncStorage.setItem('userProfile', JSON.stringify(userData));
+      await AsyncStorage.setItem('isLoggedIn', 'true');
+      
+      showToast('Login successful!', 'success');
+      
+      setTimeout(() => {
+        router.replace('/(tabs)');
+      }, 500);
+
     } catch (error) {
-      console.log('Login error:', error); // Debug log
-      Alert.alert('Error', 'Login failed. Please try again.');
+      showToast('Login failed. Please try again');
     } finally {
       setLoading(false);
     }
@@ -62,113 +155,256 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to GIET Grievance Portal</Text>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('.././assets/icon.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
 
-        <View style={styles.inputContainer}>
-          <Feather name="mail" size={20} color="#64748B" />
+      {/* Content */}
+      <View style={styles.contentContainer}>
+        <Text style={styles.title}>Login</Text>
+        <Text style={styles.subtitle}>Please Sign in to continue.</Text>
+
+        {/* Email Input */}
+        <View style={styles.inputWrapper}>
+          <Feather name="user" size={18} color="#64748B" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder="Username"
+            placeholderTextColor="#94A3B8"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            editable={!loading}
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Feather name="lock" size={20} color="#64748B" />
+        {/* Password Input */}
+        <View style={styles.inputWrapper}>
+          <Feather name="lock" size={18} color="#64748B" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder="••••••••••"
+            placeholderTextColor="#94A3B8"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
+            secureTextEntry={!showPassword}
+            editable={!loading}
           />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Feather 
+              name={showPassword ? "eye" : "eye-off"} 
+              size={18} 
+              color="#64748B" 
+            />
+          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={[styles.loginButton, loading && styles.buttonDisabled]} 
+        {/* Remember Me */}
+        <View style={styles.rememberContainer}>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setRememberMe(!rememberMe)}
+          >
+            <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
+              {rememberMe && <Feather name="check" size={14} color="#FFFFFF" />}
+            </View>
+            <Text style={styles.rememberText}>Remember me nexttime</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Sign In Button */}
+        <TouchableOpacity
+          style={[styles.signInButton, loading && styles.buttonDisabled]}
           onPress={handleLogin}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>
+          <Text style={styles.signInButtonText}>
             {loading ? 'Signing In...' : 'Sign In'}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/signup')}>
-          <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-        </TouchableOpacity>
+        {/* Sign Up Link */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have account? </Text>
+          <TouchableOpacity onPress={() => router.push('/signup')}>
+            <Text style={styles.signUpText}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Toast */}
+      {toast.visible && (
+        <Animated.View
+          style={[
+            styles.toastContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.toast,
+              toast.type === 'success' ? styles.toastSuccess : styles.toastError,
+            ]}
+          >
+            <Feather
+              name={toast.type === 'success' ? 'check-circle' : 'alert-circle'}
+              size={20}
+              color="white"
+            />
+            <Text style={styles.toastText}>{toast.message}</Text>
+          </View>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
   },
-  content: {
-    flex: 1,
-    padding: 20,
+  logoContainer: {
+    height: '35%',
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 40,
+  },
+  logo: {
+    width: 200,
+    height: 200,
+  },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 30,
+    paddingTop: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#1E293B',
-    textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#64748B',
-    textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
   },
-  inputContainer: {
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    outlineStyle: 'none',
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     color: '#1E293B',
-    marginLeft: 12,
+    outlineStyle: 'none',
   },
-  loginButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
+  rememberContainer: {
+    marginBottom: 24,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#CBD5E1',
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxActive: {
+    backgroundColor: '#1E3A5F',
+    borderColor: '#1E3A5F',
+  },
+  rememberText: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  signInButton: {
+    backgroundColor: '#1E3A5F',
+    borderRadius: 30,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
     marginBottom: 20,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
-  buttonText: {
+  signInButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
-  linkText: {
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerText: {
     fontSize: 14,
-    color: '#3B82F6',
-    textAlign: 'center',
+    color: '#64748B',
+  },
+  signUpText: {
+    fontSize: 14,
+    color: '#1E3A5F',
+    fontWeight: '600',
+  },
+  toastContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  toast: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  toastError: {
+    backgroundColor: '#1F2937',
+  },
+  toastSuccess: {
+    backgroundColor: '#10B981',
+  },
+  toastText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '500',
+    marginLeft: 12,
+    flex: 1,
   },
 });
