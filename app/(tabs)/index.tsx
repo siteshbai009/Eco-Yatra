@@ -64,10 +64,10 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, count, color, icon, onPres
   }, [startAnimation, count]);
 
   return (
-    <TouchableOpacity onPress={onPress} style={styles.statsButton} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.statsButton} onPress={onPress}>
       <Animated.View style={[styles.statsCard, { opacity: fadeAnim }]}>
         <View style={[styles.statsIconContainer, { backgroundColor: color }]}>
-          <Feather name={icon} size={32} color="white" />
+          <Feather name={icon} size={24} color="white" />
         </View>
         <Text style={styles.statsCount}>{count}</Text>
         <Text style={styles.statsTitle}>{title}</Text>
@@ -90,7 +90,6 @@ const GrievanceCard: React.FC<GrievanceCardProps> = ({ item, index, onPress, res
   const startAnimation = useCallback(() => {
     slideAnim.setValue(50);
     opacityAnim.setValue(0);
-
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: 0,
@@ -129,23 +128,21 @@ const GrievanceCard: React.FC<GrievanceCardProps> = ({ item, index, onPress, res
   };
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
+    <TouchableOpacity onPress={onPress}>
       <Animated.View
         style={[
           styles.grievanceCard,
           {
+            opacity: opacityAnim,
             transform: [{ translateY: slideAnim }],
-            opacity: opacityAnim
-          }
+          },
         ]}
       >
         <View style={styles.cardHeader}>
           <View style={styles.cardTitleRow}>
             <Text style={styles.cardTitle}>{item.title}</Text>
-            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor() + '15' }]}>
-              <Text style={[styles.priorityText, { color: getPriorityColor() }]}>
-                {item.priority}
-              </Text>
+            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor() }]}>
+              <Text style={[styles.priorityText, { color: 'white' }]}>{item.priority}</Text>
             </View>
           </View>
           <Text style={styles.cardDescription}>{item.description}</Text>
@@ -153,17 +150,14 @@ const GrievanceCard: React.FC<GrievanceCardProps> = ({ item, index, onPress, res
 
         <View style={styles.cardFooter}>
           <View style={styles.categoryContainer}>
-            <Feather name="tag" size={14} color="#8B5CF6" />
+            <Feather name="tag" size={12} color="#8B5CF6" />
             <Text style={styles.categoryText}>{item.category}</Text>
           </View>
-
           <View style={styles.statusRow}>
             <Text style={styles.dateText}>{item.date}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '15' }]}>
+            <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor()}20` }]}>
               <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
-              <Text style={[styles.statusText, { color: getStatusColor() }]}>
-                {item.status}
-              </Text>
+              <Text style={[styles.statusText, { color: getStatusColor() }]}>{item.status}</Text>
             </View>
           </View>
         </View>
@@ -173,7 +167,7 @@ const GrievanceCard: React.FC<GrievanceCardProps> = ({ item, index, onPress, res
 };
 
 export default function HomeScreen() {
-  const { user, greeting } = useUser();
+  const { user, greeting, updateUser } = useUser(); // Add updateUser here
   const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -181,27 +175,44 @@ export default function HomeScreen() {
   const [grievances, setGrievances] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Better Authentication check - runs every time screen is focused
+  // FIXED: Better Authentication check AND user data refresh
   useFocusEffect(
     useCallback(() => {
-      const checkAuth = async () => {
+      const checkAuthAndRefreshUser = async () => {
         try {
-          console.log('Checking auth on focus...');
+          console.log('Checking auth and refreshing user data...');
           const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+          
           if (!isLoggedIn || isLoggedIn !== 'true') {
             console.log('Not logged in, redirecting to login...');
             router.replace('/login');
             return;
           }
-          console.log('Auth check passed');
+
+          // REFRESH USER DATA FROM STORAGE
+          const savedProfile = await AsyncStorage.getItem('userProfile');
+          if (savedProfile) {
+            const parsedProfile = JSON.parse(savedProfile);
+            console.log('Refreshing user data in home screen:', parsedProfile);
+            
+            // Force update the user context with fresh data
+            updateUser({
+              name: parsedProfile.name || 'Student Name',
+              email: parsedProfile.email || 'student@giet.edu',
+              role: parsedProfile.role || 'Student',
+              department: parsedProfile.department || 'Computer Science',
+            });
+          }
+
+          console.log('Auth check and user refresh completed');
         } catch (error) {
-          console.log('Auth check error:', error);
+          console.log('Auth check/user refresh error:', error);
           router.replace('/login');
         }
       };
 
-      checkAuth();
-    }, [])
+      checkAuthAndRefreshUser();
+    }, []) // Empty dependency to run every time screen focuses
   );
 
   const stats = getGrievanceStats(grievances);
@@ -254,142 +265,141 @@ export default function HomeScreen() {
   // Show loading state
   if (isLoading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ fontSize: 16, color: '#64748B' }}>Loading your grievances...</Text>
-      </View>
+      <SafeAreaView style={[styles.container, styles.background]}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 16, color: '#64748B' }}>Loading your grievances...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, styles.background]}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+      <ScrollView style={styles.safeArea} showsVerticalScrollIndicator={false}>
+        {/* Header - notification icon removed */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>{greeting} 👋</Text>
+            <Text style={styles.username}>{user.name}</Text>
+            <Text style={styles.subtitle}>Welcome to GIET Grievance Portal</Text>
+          </View>
+        </View>
 
-      <View style={styles.background}>
-        <SafeAreaView style={styles.safeArea}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Stats Cards - 3 in a Row */}
+        <View style={styles.statsContainer}>
+          {statsData.map((stat, index) => (
+            <StatsCard
+              key={stat.title}
+              title={stat.title}
+              count={stat.count}
+              color={stat.color}
+              icon={stat.icon}
+              onPress={() => handleStatsPress(stat.title)}
+              animationDelay={index * 200}
+            />
+          ))}
+        </View>
 
-            {/* Header - notification icon removed */}
-            <View style={styles.header}>
-              <View>
-                <Text style={styles.greeting}>{greeting} 👋</Text>
-                <Text style={styles.username}>{user.name}</Text>
-                <Text style={styles.subtitle}>Welcome to GIET Grievance Portal</Text>
-              </View>
-            </View>
+        {/* Recent Activity */}
+        <View style={styles.activityContainer}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <View style={styles.activityCard}>
+            {grievances.length > 0 ? (
+              <>
+                <View style={styles.activityItem}>
+                  <View style={[styles.activityIcon, { backgroundColor: '#6366F1' }]}>
+                    <Feather name="plus" size={16} color="white" />
+                  </View>
+                  <View style={styles.activityContent}>
+                    <Text style={styles.activityTitle}>New Submission</Text>
+                    <Text style={styles.activityText}>{grievances[0].title} - {grievances[0].date}</Text>
+                  </View>
+                </View>
 
-            {/* Stats Cards - 3 in a Row */}
-            <View style={styles.statsContainer}>
-              {statsData.map((stat, index) => (
-                <StatsCard
-                  key={`${stat.title}-${refreshKey}`}
-                  {...stat}
-                  onPress={() => handleStatsPress(stat.title)}
-                  animationDelay={index * 200}
-                />
-              ))}
-            </View>
-
-            {/* Recent Activity */}
-            <View style={styles.activityContainer}>
-              <Text style={styles.sectionTitle}>Recent Activity</Text>
-              <View style={styles.activityCard}>
-                {grievances.length > 0 ? (
+                {grievances.length > 1 && (
                   <>
+                    <View style={styles.activityDivider} />
                     <View style={styles.activityItem}>
-                      <View style={[styles.activityIcon, { backgroundColor: '#6366F115' }]}>
-                        <Feather name="plus-circle" size={18} color="#6366F1" />
+                      <View style={[styles.activityIcon, { backgroundColor: '#F59E0B' }]}>
+                        <Feather name="refresh-cw" size={16} color="white" />
                       </View>
                       <View style={styles.activityContent}>
-                        <Text style={styles.activityTitle}>New Submission</Text>
-                        <Text style={styles.activityText}>{grievances[0].title} - {grievances[0].date}</Text>
+                        <Text style={styles.activityTitle}>Status Update</Text>
+                        <Text style={styles.activityText}>{grievances[1].title} - {grievances[1].status}</Text>
                       </View>
                     </View>
-
-                    {grievances.length > 1 && (
-                      <>
-                        <View style={styles.activityDivider} />
-                        <View style={styles.activityItem}>
-                          <View style={[styles.activityIcon, { backgroundColor: '#F59E0B15' }]}>
-                            <Feather name="clock" size={18} color="#F59E0B" />
-                          </View>
-                          <View style={styles.activityContent}>
-                            <Text style={styles.activityTitle}>Status Update</Text>
-                            <Text style={styles.activityText}>{grievances[1].title} - {grievances[1].status}</Text>
-                          </View>
-                        </View>
-                      </>
-                    )}
-
-                    {grievances.filter(g => g.status === 'Resolved').length > 0 && (
-                      <>
-                        <View style={styles.activityDivider} />
-                        <View style={styles.activityItem}>
-                          <View style={[styles.activityIcon, { backgroundColor: '#10B98115' }]}>
-                            <Feather name="check-circle" size={18} color="#10B981" />
-                          </View>
-                          <View style={styles.activityContent}>
-                            <Text style={styles.activityTitle}>Grievance Resolved</Text>
-                            <Text style={styles.activityText}>{grievances.find(g => g.status === 'Resolved')?.title} - Completed</Text>
-                          </View>
-                        </View>
-                      </>
-                    )}
                   </>
-                ) : (
-                  <View style={styles.activityItem}>
-                    <View style={[styles.activityIcon, { backgroundColor: '#6366F115' }]}>
-                      <Feather name="info" size={18} color="#6366F1" />
-                    </View>
-                    <View style={styles.activityContent}>
-                      <Text style={styles.activityTitle}>No Activity Yet</Text>
-                      <Text style={styles.activityText}>Submit your first grievance to see activity here</Text>
-                    </View>
-                  </View>
                 )}
-              </View>
-            </View>
 
-            {/* Recent Grievances */}
-            <View style={styles.recentSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Recent Grievances</Text>
-                <TouchableOpacity onPress={() => router.push('/track')}>
-                  <Text style={styles.seeAllText}>See All</Text>
-                </TouchableOpacity>
-              </View>
-
-              {grievances.length > 0 ? (
-                grievances.slice(0, 3).map((item, index) => (
-                  <GrievanceCard
-                    key={`${item.id}-${refreshKey}`}
-                    item={item}
-                    index={index}
-                    onPress={() => handleCardPress(item)}
-                    resetAnimation={refreshKey > 0}
-                  />
-                ))
-              ) : (
-                <View style={styles.emptyState}>
-                  <Feather name="clipboard" size={48} color="#94A3B8" />
-                  <Text style={styles.emptyTitle}>No Grievances Yet</Text>
-                  <Text style={styles.emptyText}>Start by submitting your first grievance</Text>
-                  <TouchableOpacity
-                    style={styles.emptyButton}
-                    onPress={() => router.push('/submit')}
-                  >
-                    <Text style={styles.emptyButtonText}>Submit Grievance</Text>
-                  </TouchableOpacity>
+                {grievances.filter(g => g.status === 'Resolved').length > 0 && (
+                  <>
+                    <View style={styles.activityDivider} />
+                    <View style={styles.activityItem}>
+                      <View style={[styles.activityIcon, { backgroundColor: '#10B981' }]}>
+                        <Feather name="check" size={16} color="white" />
+                      </View>
+                      <View style={styles.activityContent}>
+                        <Text style={styles.activityTitle}>Grievance Resolved</Text>
+                        <Text style={styles.activityText}>{grievances.find(g => g.status === 'Resolved')?.title} - Completed</Text>
+                      </View>
+                    </View>
+                  </>
+                )}
+              </>
+            ) : (
+              <View style={styles.activityItem}>
+                <View style={[styles.activityIcon, { backgroundColor: '#94A3B8' }]}>
+                  <Feather name="clock" size={16} color="white" />
                 </View>
-              )}
-            </View>
+                <View style={styles.activityContent}>
+                  <Text style={styles.activityTitle}>No Activity Yet</Text>
+                  <Text style={styles.activityText}>Submit your first grievance to see activity here</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
 
-          </ScrollView>
-        </SafeAreaView>
-      </View>
-    </View>
+        {/* Recent Grievances */}
+        <View style={styles.recentSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Grievances</Text>
+            <TouchableOpacity onPress={() => router.push('/track')}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+
+          {grievances.length > 0 ? (
+            grievances.slice(0, 3).map((item, index) => (
+              <GrievanceCard
+                key={item.id}
+                item={item}
+                index={index}
+                onPress={() => handleCardPress(item)}
+                resetAnimation={refreshKey > 0}
+              />
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Feather name="file-plus" size={48} color="#CBD5E1" />
+              <Text style={styles.emptyTitle}>No Grievances Yet</Text>
+              <Text style={styles.emptyText}>Start by submitting your first grievance</Text>
+              <TouchableOpacity 
+                style={styles.emptyButton}
+                onPress={() => router.push('/submit')}
+              >
+                <Text style={styles.emptyButtonText}>Submit Grievance</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
+// ... (rest of the styles remain the same)
 const styles = StyleSheet.create({
   container: {
     flex: 1,

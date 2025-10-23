@@ -114,7 +114,6 @@ export default function SignupScreen() {
     }
 
     setLoading(true);
-
     try {
       const existingUser = await AsyncStorage.getItem('userProfile');
       if (existingUser) {
@@ -137,7 +136,7 @@ export default function SignupScreen() {
 
       await AsyncStorage.setItem('userProfile', JSON.stringify(userData));
       await AsyncStorage.setItem('isLoggedIn', 'true');
-
+      
       showToast('Account created successfully!', 'success');
       
       setTimeout(() => {
@@ -154,8 +153,9 @@ export default function SignupScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Logo */}
+        {/* Logo - SAME AS LOGIN */}
         <View style={styles.logoContainer}>
           <Image
             source={require('.././assets/icon.png')}
@@ -164,7 +164,7 @@ export default function SignupScreen() {
           />
         </View>
 
-        {/* Content */}
+        {/* Content - SAME AS LOGIN */}
         <View style={styles.contentContainer}>
           <Text style={styles.title}>Register</Text>
           <Text style={styles.subtitle}>Please register to login.</Text>
@@ -174,7 +174,7 @@ export default function SignupScreen() {
             <Feather name="user" size={18} color="#64748B" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Username"
+              placeholder="Full Name"
               placeholderTextColor="#94A3B8"
               value={formData.name}
               onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -200,18 +200,16 @@ export default function SignupScreen() {
           </View>
 
           {/* Department Dropdown */}
-          <TouchableOpacity
+          <TouchableOpacity 
             style={styles.inputWrapper}
             onPress={() => setShowDepartmentModal(true)}
             disabled={loading}
           >
             <Feather name="book" size={18} color="#64748B" style={styles.inputIcon} />
-            <Text
-              style={[
-                styles.dropdownText,
-                !formData.department && styles.placeholderText,
-              ]}
-            >
+            <Text style={[
+              styles.dropdownText, 
+              !formData.department && styles.placeholderText
+            ]}>
               {formData.department || 'Department'}
             </Text>
             <Feather name="chevron-down" size={18} color="#64748B" />
@@ -273,11 +271,15 @@ export default function SignupScreen() {
       </ScrollView>
 
       {/* Department Modal */}
-      {showDepartmentModal && (
+      <Modal
+        visible={showDepartmentModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowDepartmentModal(false)}
+      >
         <View style={styles.modalOverlay}>
           <TouchableOpacity 
-            style={styles.modalBackdrop} 
-            activeOpacity={1} 
+            style={styles.modalBackdrop}
             onPress={() => setShowDepartmentModal(false)}
           />
           <View style={styles.departmentModalContent}>
@@ -289,20 +291,18 @@ export default function SignupScreen() {
             </View>
             <ScrollView style={styles.departmentList}>
               {DEPARTMENTS.map((dept, index) => (
-                <TouchableOpacity
+                <TouchableOpacity 
                   key={index}
                   style={[
                     styles.departmentItem,
-                    formData.department === dept && styles.selectedDepartment,
+                    formData.department === dept && styles.selectedDepartment
                   ]}
                   onPress={() => handleDepartmentSelect(dept)}
                 >
-                  <Text
-                    style={[
-                      styles.departmentText,
-                      formData.department === dept && styles.selectedDepartmentText,
-                    ]}
-                  >
+                  <Text style={[
+                    styles.departmentText,
+                    formData.department === dept && styles.selectedDepartmentText
+                  ]}>
                     {dept}
                   </Text>
                   {formData.department === dept && (
@@ -313,7 +313,7 @@ export default function SignupScreen() {
             </ScrollView>
           </View>
         </View>
-      )}
+      </Modal>
 
       {/* Toast */}
       {toast.visible && (
@@ -350,6 +350,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  // EXACTLY SAME AS LOGIN
   logoContainer: {
     height: 280,
     justifyContent: 'center',
@@ -357,12 +358,14 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 220,
+    height: 220,
   },
+  // EXACTLY SAME AS LOGIN
   contentContainer: {
+    flex: 1,
     paddingHorizontal: 30,
-    paddingBottom: 40,
+    paddingTop: 20,
   },
   title: {
     fontSize: 36,
@@ -458,12 +461,9 @@ const styles = StyleSheet.create({
   },
   // Modal
   modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1000,
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalBackdrop: {
     position: 'absolute',
@@ -471,13 +471,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   departmentModalContent: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: 'white',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,

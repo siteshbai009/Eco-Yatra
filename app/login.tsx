@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 
-// Authorized users - All CSE Department
+// Authorized users - All CSE Department + Admin
 const AUTHORIZED_USERS = [
   {
     email: 'swarnapravaparida2004@gmail.com',
@@ -45,6 +45,13 @@ const AUTHORIZED_USERS = [
     password: 'Sitesh@123',
     name: 'Sitesh Bai',
     department: 'Computer Science & Engineering (CSE)',
+  },
+  // ADMIN ACCOUNT FOR DEMO/COLLEGE PRESENTATION
+  {
+    email: 'admin@giet.edu.in',
+    password: 'Admin@1234',
+    name: 'GIET Administrator',
+    department: 'Administration',
   },
 ];
 
@@ -128,11 +135,15 @@ export default function LoginScreen() {
         return;
       }
 
+      // Determine role based on email domain and department
+      const isAdmin = authorizedUser.email.includes('admin@giet.edu.in');
+      const userRole = isAdmin ? 'Administrator' : 'Student';
+
       const userData = {
         id: Date.now().toString(),
         name: authorizedUser.name,
         email: authorizedUser.email,
-        role: 'Student',
+        role: userRole,
         department: authorizedUser.department,
         password: authorizedUser.password,
       };
@@ -140,7 +151,7 @@ export default function LoginScreen() {
       await AsyncStorage.setItem('userProfile', JSON.stringify(userData));
       await AsyncStorage.setItem('isLoggedIn', 'true');
       
-      showToast('Login successful!', 'success');
+      showToast(`Login successful! Welcome ${isAdmin ? 'Administrator' : 'Student'}`, 'success');
       
       setTimeout(() => {
         router.replace('/(tabs)');
@@ -277,14 +288,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   logoContainer: {
-    height: '35%',
+    height: 280,
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 40,
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 220,
+    height: 220,
   },
   contentContainer: {
     flex: 1,
