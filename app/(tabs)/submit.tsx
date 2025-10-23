@@ -17,7 +17,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
 import { saveGrievance } from '../../dataStorage';
 
 const CATEGORIES = [
@@ -51,8 +50,11 @@ export default function SubmitGrievanceScreen() {
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
   const [isAttachmentModalVisible, setAttachmentModalVisible] = useState(false);
-  
+  const [isSuccessModalVisible, setSuccessModalVisible] = useState(false);
+  const [submittedData, setSubmittedData] = useState<any>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const successFadeAnim = useRef(new Animated.Value(0)).current;
+  const successScaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -68,7 +70,7 @@ export default function SubmitGrievanceScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  // ✅ Clear form function
+  // Clear form function
   const clearForm = () => {
     setTitle('');
     setCategory('');
@@ -78,14 +80,55 @@ export default function SubmitGrievanceScreen() {
     setAttachments([]);
   };
 
+  // Show success modal with animation
+  const showSuccessModal = (data: any) => {
+    setSubmittedData(data);
+    setSuccessModalVisible(true);
+    
+    Animated.parallel([
+      Animated.timing(successFadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(successScaleAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  // Hide success modal with animation
+  const hideSuccessModal = () => {
+    Animated.parallel([
+      Animated.timing(successFadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(successScaleAnim, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setSuccessModalVisible(false);
+      setSubmittedData(null);
+      successFadeAnim.setValue(0);
+      successScaleAnim.setValue(0.8);
+    });
+  };
+
   const handleSubmit = async () => {
     if (!title || !category || !description) {
       Alert.alert("Missing Information", "Please fill out all required fields.");
       return;
     }
 
-    // ✅ Store values before clearing
-    const submittedData = {
+    // Store values before clearing
+    const dataToSubmit = {
       title,
       category,
       priority,
@@ -102,29 +145,15 @@ export default function SubmitGrievanceScreen() {
         description
       });
 
-      // ✅ Clear form IMMEDIATELY after successful save
+      // Clear form IMMEDIATELY after successful save
       clearForm();
-
+      
+      // Haptic feedback
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      Alert.alert(
-        "Success! 🎉",
-        `Your grievance has been submitted successfully.\n\n📋 Title: ${submittedData.title}\n📂 Category: ${submittedData.category}\n⚡ Priority: ${submittedData.priority}\n📎 Attachments: ${submittedData.attachmentCount}\n\nYou can track its progress in the Track tab.`,
-        [
-          { 
-            text: "View in Track", 
-            onPress: () => {
-              router.push('/track');
-            }
-          },
-          {
-            text: "Submit Another",
-            onPress: () => {
-              // Form is already cleared, ready for next submission!
-            }
-          }
-        ]
-      );
+      // Show beautiful success popup
+      showSuccessModal(dataToSubmit);
+
     } catch (error) {
       Alert.alert("Error", "Failed to submit grievance. Please try again.");
     }
@@ -132,8 +161,8 @@ export default function SubmitGrievanceScreen() {
 
   const pickImageFromCamera = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    
     if (!permissionResult.granted) {
       Alert.alert("Permission Required", "Camera permission is required to take photos.");
       return;
@@ -161,8 +190,8 @@ export default function SubmitGrievanceScreen() {
 
   const pickImageFromGallery = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
     if (!permissionResult.granted) {
       Alert.alert("Permission Required", "Gallery permission is required to select photos.");
       return;
@@ -211,34 +240,22 @@ export default function SubmitGrievanceScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
       
       <View style={styles.background}>
-        <SafeAreaView style={styles.safeArea}>
-          <Animated.View 
-            style={[
-              styles.content,
-              { opacity: fadeAnim }
-            ]}
-          >
-            
+        <ScrollView style={styles.safeArea} showsVerticalScrollIndicator={false}>
+          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.headerTitle}>Submit Grievance</Text>
-              <Text style={styles.headerSubtitle}>
-                We're here to help resolve your concerns
-              </Text>
+              <Text style={styles.headerSubtitle}>We're here to help resolve your concerns</Text>
             </View>
 
-            <ScrollView 
-              style={styles.scrollView}
-              showsVerticalScrollIndicator={false}
-            >
-              
+            <View style={styles.scrollView}>
               {/* Title Input */}
               <View style={styles.inputSection}>
-                <Text style={styles.inputLabel}>Title *</Text>
+                <Text style={styles.inputLabel}>Title <Text style={styles.optionalText}>*</Text></Text>
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.textInput}
@@ -246,14 +263,15 @@ export default function SubmitGrievanceScreen() {
                     placeholderTextColor="#94A3B8"
                     value={title}
                     onChangeText={setTitle}
+                    maxLength={100}
                   />
                 </View>
               </View>
 
               {/* Category Selection */}
               <View style={styles.inputSection}>
-                <Text style={styles.inputLabel}>Category *</Text>
-                <TouchableOpacity 
+                <Text style={styles.inputLabel}>Category <Text style={styles.optionalText}>*</Text></Text>
+                <TouchableOpacity
                   style={styles.categorySelector}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -263,15 +281,15 @@ export default function SubmitGrievanceScreen() {
                   <View style={styles.categoryContent}>
                     {category ? (
                       <View style={styles.selectedCategory}>
-                        <View style={[styles.categoryIcon, { backgroundColor: getCategoryColor(category) + '15' }]}>
-                          <Feather name={getCategoryIcon(category) as any} size={20} color={getCategoryColor(category)} />
+                        <View style={[styles.categoryIcon, { backgroundColor: getCategoryColor(category) }]}>
+                          <Feather name={getCategoryIcon(category) as any} size={20} color="white" />
                         </View>
                         <Text style={styles.categoryText}>{category}</Text>
                       </View>
                     ) : (
                       <Text style={styles.categoryPlaceholder}>Select Category</Text>
                     )}
-                    <Feather name="chevron-down" size={20} color="#94A3B8" />
+                    <Feather name="chevron-right" size={20} color="#94A3B8" />
                   </View>
                 </TouchableOpacity>
               </View>
@@ -285,10 +303,7 @@ export default function SubmitGrievanceScreen() {
                       key={item.id}
                       style={[
                         styles.priorityButton,
-                        priority === item.name && { 
-                          backgroundColor: item.color + '15',
-                          borderColor: item.color + '30'
-                        }
+                        priority === item.name && { borderColor: item.color, borderWidth: 2 }
                       ]}
                       onPress={() => {
                         setPriority(item.name);
@@ -296,12 +311,7 @@ export default function SubmitGrievanceScreen() {
                       }}
                     >
                       <View style={[styles.priorityDot, { backgroundColor: item.color }]} />
-                      <Text style={[
-                        styles.priorityLabel,
-                        priority === item.name && { color: item.color, fontWeight: '600' }
-                      ]}>
-                        {item.name}
-                      </Text>
+                      <Text style={styles.priorityLabel}>{item.name}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -309,17 +319,16 @@ export default function SubmitGrievanceScreen() {
 
               {/* Description Input */}
               <View style={styles.inputSection}>
-                <Text style={styles.inputLabel}>Description *</Text>
+                <Text style={styles.inputLabel}>Description <Text style={styles.optionalText}>*</Text></Text>
                 <View style={[styles.inputContainer, styles.descriptionContainer]}>
                   <TextInput
                     style={[styles.textInput, styles.descriptionInput]}
-                    placeholder="Provide detailed information about your grievance..."
+                    placeholder="Describe your issue in detail..."
                     placeholderTextColor="#94A3B8"
-                    multiline
-                    numberOfLines={6}
-                    textAlignVertical="top"
                     value={description}
                     onChangeText={setDescription}
+                    multiline
+                    maxLength={500}
                   />
                 </View>
                 <Text style={styles.characterCount}>{description.length}/500</Text>
@@ -328,10 +337,11 @@ export default function SubmitGrievanceScreen() {
               {/* Enhanced Attachments Section */}
               <View style={styles.inputSection}>
                 <Text style={styles.inputLabel}>
-                  Attachments ({attachments.length})
-                  {attachments.length > 0 && <Text style={styles.optionalText}> • Tap to view</Text>}
+                  Attachments ({attachments.length}) <Text style={styles.optionalText}>
+                    {attachments.length > 0 && "• Tap to view"}
+                  </Text>
                 </Text>
-                
+
                 {/* Attachment Preview */}
                 {attachments.length > 0 && (
                   <View style={styles.attachmentPreview}>
@@ -342,7 +352,7 @@ export default function SubmitGrievanceScreen() {
                           <Text style={styles.attachmentName}>{attachment.name}</Text>
                           <Text style={styles.attachmentSize}>{formatFileSize(attachment.size)}</Text>
                         </View>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={styles.removeButton}
                           onPress={() => removeAttachment(attachment.id)}
                         >
@@ -353,8 +363,8 @@ export default function SubmitGrievanceScreen() {
                   </View>
                 )}
 
-                <TouchableOpacity 
-                  style={styles.attachmentButton} 
+                <TouchableOpacity
+                  style={styles.attachmentButton}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setAttachmentModalVisible(true);
@@ -394,10 +404,9 @@ export default function SubmitGrievanceScreen() {
                   <Text style={styles.submitText}>Submit Grievance</Text>
                 </View>
               </TouchableOpacity>
-
-            </ScrollView>
+            </View>
           </Animated.View>
-        </SafeAreaView>
+        </ScrollView>
       </View>
 
       {/* Category Modal */}
@@ -405,6 +414,7 @@ export default function SubmitGrievanceScreen() {
         visible={isCategoryModalVisible}
         transparent={true}
         animationType="slide"
+        onRequestClose={() => setCategoryModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -414,7 +424,6 @@ export default function SubmitGrievanceScreen() {
                 <Feather name="x" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
-            
             <ScrollView style={styles.categoryList}>
               {CATEGORIES.map((item) => (
                 <TouchableOpacity
@@ -422,11 +431,10 @@ export default function SubmitGrievanceScreen() {
                   style={styles.categoryOption}
                   onPress={() => handleSelectCategory(item.name)}
                 >
-                  <View style={[styles.categoryIcon, { backgroundColor: item.color + '15' }]}>
-                    <Feather name={item.icon as any} size={20} color={item.color} />
+                  <View style={[styles.categoryIcon, { backgroundColor: item.color }]}>
+                    <Feather name={item.icon as any} size={20} color="white" />
                   </View>
                   <Text style={styles.categoryOptionText}>{item.name}</Text>
-                  <Feather name="chevron-right" size={16} color="#94A3B8" />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -439,6 +447,7 @@ export default function SubmitGrievanceScreen() {
         visible={isAttachmentModalVisible}
         transparent={true}
         animationType="slide"
+        onRequestClose={() => setAttachmentModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -448,19 +457,18 @@ export default function SubmitGrievanceScreen() {
                 <Feather name="x" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
-            
             <View style={styles.attachmentOptions}>
               <TouchableOpacity style={styles.attachmentOptionButton} onPress={pickImageFromCamera}>
-                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#EF444415' }]}>
-                  <Feather name="camera" size={32} color="#EF4444" />
+                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#DBEAFE' }]}>
+                  <Feather name="camera" size={32} color="#3B82F6" />
                 </View>
                 <Text style={styles.attachmentOptionTitle}>Take Photo</Text>
                 <Text style={styles.attachmentOptionSubtitle}>Use camera to capture evidence</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.attachmentOptionButton} onPress={pickImageFromGallery}>
-                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#6366F115' }]}>
-                  <Feather name="image" size={32} color="#6366F1" />
+                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#F3E8FF' }]}>
+                  <Feather name="image" size={32} color="#8B5CF6" />
                 </View>
                 <Text style={styles.attachmentOptionTitle}>Choose from Gallery</Text>
                 <Text style={styles.attachmentOptionSubtitle}>Select existing photos</Text>
@@ -469,7 +477,89 @@ export default function SubmitGrievanceScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+
+      {/* SUCCESS MODAL - Beautiful Popup */}
+      <Modal
+        visible={isSuccessModalVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={hideSuccessModal}
+      >
+        <Animated.View 
+          style={[
+            styles.successOverlay,
+            { opacity: successFadeAnim }
+          ]}
+        >
+          <Animated.View 
+            style={[
+              styles.successModal,
+              {
+                opacity: successFadeAnim,
+                transform: [{ scale: successScaleAnim }]
+              }
+            ]}
+          >
+            {/* Success Icon */}
+            <View style={styles.successIconContainer}>
+              <View style={styles.successIcon}>
+                <Feather name="check" size={40} color="#fff" />
+              </View>
+            </View>
+
+            {/* Success Content */}
+            <Text style={styles.successTitle}>Grievance Submitted! 🎉</Text>
+            <Text style={styles.successMessage}>
+              Your grievance has been submitted successfully and will be reviewed by our team.
+            </Text>
+
+            {/* Submitted Details */}
+            {submittedData && (
+              <View style={styles.successDetails}>
+                <View style={styles.successDetailRow}>
+                  <Feather name="file-text" size={16} color="#6366F1" />
+                  <Text style={styles.successDetailText}>{submittedData.title}</Text>
+                </View>
+                <View style={styles.successDetailRow}>
+                  <Feather name="tag" size={16} color="#6366F1" />
+                  <Text style={styles.successDetailText}>{submittedData.category}</Text>
+                </View>
+                <View style={styles.successDetailRow}>
+                  <Feather name="alert-circle" size={16} color="#6366F1" />
+                  <Text style={styles.successDetailText}>{submittedData.priority} Priority</Text>
+                </View>
+                {submittedData.attachmentCount > 0 && (
+                  <View style={styles.successDetailRow}>
+                    <Feather name="paperclip" size={16} color="#6366F1" />
+                    <Text style={styles.successDetailText}>{submittedData.attachmentCount} Attachment(s)</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Action Buttons */}
+            <View style={styles.successButtons}>
+              <TouchableOpacity 
+                style={styles.successButtonSecondary}
+                onPress={() => {
+                  hideSuccessModal();
+                  router.push('/track');
+                }}
+              >
+                <Text style={styles.successButtonSecondaryText}>Track Progress</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.successButtonPrimary}
+                onPress={hideSuccessModal}
+              >
+                <Text style={styles.successButtonPrimaryText}>Submit Another</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
@@ -840,5 +930,112 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748B',
     textAlign: 'center',
+  },
+  // SUCCESS MODAL STYLES
+  successOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  successModal: {
+    backgroundColor: 'white',
+    borderRadius: 24,
+    padding: 30,
+    alignItems: 'center',
+    maxWidth: 350,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 20,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+  successIconContainer: {
+    marginBottom: 20,
+  },
+  successIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#10B981',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#10B981',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  successTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  successMessage: {
+    fontSize: 16,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  successDetails: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    gap: 12,
+  },
+  successDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  successDetailText: {
+    fontSize: 14,
+    color: '#1E293B',
+    fontWeight: '500',
+    flex: 1,
+  },
+  successButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  successButtonSecondary: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+  },
+  successButtonSecondaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6366F1',
+  },
+  successButtonPrimary: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#6366F1',
+    alignItems: 'center',
+  },
+  successButtonPrimaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });
