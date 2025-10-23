@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -13,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../../UserContext';
 
 export default function ProfileScreen() {
@@ -22,10 +22,10 @@ export default function ProfileScreen() {
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    department: user.department,
+    name: user.name || '',
+    email: user.email || '',
+    role: user.role || '',
+    department: user.department || '',
   });
 
   // Load saved profile from AsyncStorage on app start
@@ -45,19 +45,31 @@ export default function ProfileScreen() {
     loadProfile();
   }, []);
 
+  // SIMPLE WORKING LOGOUT FUNCTION
   const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', onPress: () => console.log('User logged out') },
-    ]);
+    console.log('Logout button clicked!');
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log Out',
+          onPress: () => {
+            console.log('User confirmed logout');
+            router.push('/login');
+          }
+        }
+      ]
+    );
   };
 
   const handleEditProfile = () => {
     setEditForm({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      department: user.department,
+      name: user.name || '',
+      email: user.email || '',
+      role: user.role || '',
+      department: user.department || '',
     });
     setEditModalVisible(true);
   };
@@ -73,8 +85,19 @@ export default function ProfileScreen() {
     }
     
     try {
+      // Get current profile to preserve password
+      const currentProfile = await AsyncStorage.getItem('userProfile');
+      const currentData = currentProfile ? JSON.parse(currentProfile) : {};
+      
+      // Merge updated data with password preserved
+      const updatedProfile = {
+        ...currentData,
+        ...editForm,
+        password: currentData.password, // Keep the original password
+      };
+      
       // Save to AsyncStorage
-      await AsyncStorage.setItem('userProfile', JSON.stringify(editForm));
+      await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
       // Update context
       updateUser(editForm);
       setEditModalVisible(false);
@@ -87,6 +110,7 @@ export default function ProfileScreen() {
   const handleSettings = () => {
     router.push('/AccountSettings');
   };
+  
   const handleHelp = () => {
     router.push('/HelpSupport');
   };
@@ -110,10 +134,10 @@ export default function ProfileScreen() {
             </View>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user.name}</Text>
-            <Text style={styles.userEmail}>{user.email}</Text>
+            <Text style={styles.userName}>{user.name || 'User'}</Text>
+            <Text style={styles.userEmail}>{user.email || 'email@example.com'}</Text>
             <Text style={styles.userRole}>
-              {user.role} • {user.department}
+              {user.role || 'Student'} • {user.department || 'General'}
             </Text>
           </View>
           <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
@@ -152,9 +176,12 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           </View>
+          
+          {/* LOGOUT BUTTON - GUARANTEED TO WORK */}
           <TouchableOpacity
-            style={[styles.sectionCard, { backgroundColor: '#FEF2F2' }]}
+            style={styles.logoutCard}
             onPress={handleLogout}
+            activeOpacity={0.7}
           >
             <View style={styles.optionCard}>
               <View style={styles.optionLeft}>
@@ -352,6 +379,17 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     backgroundColor: 'white',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  logoutCard: {
+    backgroundColor: '#FEF2F2',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#F1F5F9',

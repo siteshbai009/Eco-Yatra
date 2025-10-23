@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -14,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { useUser } from '../../UserContext';
-import { loadGrievances, getGrievanceStats } from '../../dataStorage';
+import { getGrievanceStats, loadGrievances } from '../../dataStorage';
 
 const { width } = Dimensions.get('window');
 
@@ -171,7 +172,6 @@ const GrievanceCard: React.FC<GrievanceCardProps> = ({ item, index, onPress, res
   );
 };
 
-
 export default function HomeScreen() {
   const { user, greeting } = useUser();
   const router = useRouter();
@@ -180,6 +180,29 @@ export default function HomeScreen() {
   // State for dynamic data
   const [grievances, setGrievances] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Better Authentication check - runs every time screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const checkAuth = async () => {
+        try {
+          console.log('Checking auth on focus...');
+          const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+          if (!isLoggedIn || isLoggedIn !== 'true') {
+            console.log('Not logged in, redirecting to login...');
+            router.replace('/login');
+            return;
+          }
+          console.log('Auth check passed');
+        } catch (error) {
+          console.log('Auth check error:', error);
+          router.replace('/login');
+        }
+      };
+
+      checkAuth();
+    }, [])
+  );
 
   const stats = getGrievanceStats(grievances);
   const statsData: StatsItem[] = [
@@ -265,6 +288,7 @@ export default function HomeScreen() {
                 />
               ))}
             </View>
+
             {/* Recent Activity */}
             <View style={styles.activityContainer}>
               <Text style={styles.sectionTitle}>Recent Activity</Text>
@@ -638,4 +662,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
