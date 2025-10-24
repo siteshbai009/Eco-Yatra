@@ -34,7 +34,6 @@ export default function SignupScreen() {
     department: '',
     password: '',
   });
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDepartmentModal, setShowDepartmentModal] = useState(false);
@@ -45,7 +44,6 @@ export default function SignupScreen() {
 
   const showToast = (message: string, type: 'error' | 'success' = 'error') => {
     setToast({ visible: true, message, type });
-    
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -136,13 +134,11 @@ export default function SignupScreen() {
 
       await AsyncStorage.setItem('userProfile', JSON.stringify(userData));
       await AsyncStorage.setItem('isLoggedIn', 'true');
-      
       showToast('Account created successfully!', 'success');
-      
+
       setTimeout(() => {
         router.replace('/(tabs)');
       }, 1000);
-
     } catch (error) {
       showToast('Failed to create account');
     } finally {
@@ -152,29 +148,37 @@ export default function SignupScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="light-content" backgroundColor="#1E6FD9" />
       
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Logo - SAME AS LOGIN */}
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('.././assets/icon.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+      {/* Blue Header Background */}
+      <View style={styles.headerBackground} />
+      
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* White Card Container */}
+        <View style={styles.card}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../assets/icon.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
 
-        {/* Content - SAME AS LOGIN */}
-        <View style={styles.contentContainer}>
-          <Text style={styles.title}>Register</Text>
-          <Text style={styles.subtitle}>Please register to login.</Text>
+          {/* Title */}
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Please register to get started.</Text>
 
           {/* Name Input */}
+          <Text style={styles.inputLabel}>Full Name</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="user" size={18} color="#64748B" style={styles.inputIcon} />
+            <Feather name="user" size={20} color="#64748B" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Full Name"
+              placeholder="Enter your full name"
               placeholderTextColor="#94A3B8"
               value={formData.name}
               onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -184,11 +188,12 @@ export default function SignupScreen() {
           </View>
 
           {/* Email Input */}
+          <Text style={styles.inputLabel}>Email Address</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="mail" size={18} color="#64748B" style={styles.inputIcon} />
+            <Feather name="mail" size={20} color="#64748B" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Email"
+              placeholder="Enter your email"
               placeholderTextColor="#94A3B8"
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
@@ -200,52 +205,38 @@ export default function SignupScreen() {
           </View>
 
           {/* Department Dropdown */}
-          <TouchableOpacity 
+          <Text style={styles.inputLabel}>Department</Text>
+          <TouchableOpacity
             style={styles.inputWrapper}
             onPress={() => setShowDepartmentModal(true)}
             disabled={loading}
           >
-            <Feather name="book" size={18} color="#64748B" style={styles.inputIcon} />
-            <Text style={[
-              styles.dropdownText, 
-              !formData.department && styles.placeholderText
-            ]}>
-              {formData.department || 'Department'}
+            <Feather name="briefcase" size={20} color="#64748B" style={styles.inputIcon} />
+            <Text style={[styles.dropdownText, !formData.department && styles.placeholderText]}>
+              {formData.department || 'Select your department'}
             </Text>
-            <Feather name="chevron-down" size={18} color="#64748B" />
+            <Feather name="chevron-down" size={20} color="#64748B" />
           </TouchableOpacity>
 
           {/* Password Input */}
+          <Text style={styles.inputLabel}>Password</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="lock" size={18} color="#64748B" style={styles.inputIcon} />
+            <Feather name="lock" size={20} color="#64748B" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="••••••••••"
+              placeholder="Create a password"
               placeholderTextColor="#94A3B8"
+              secureTextEntry={!showPassword}
               value={formData.password}
               onChangeText={(text) => setFormData({ ...formData, password: text })}
-              secureTextEntry={!showPassword}
               editable={!loading}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
               <Feather 
-                name={showPassword ? "eye" : "eye-off"} 
-                size={18} 
+                name={showPassword ? 'eye' : 'eye-off'} 
+                size={20} 
                 color="#64748B" 
               />
-            </TouchableOpacity>
-          </View>
-
-          {/* Remember Me */}
-          <View style={styles.rememberContainer}>
-            <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={() => setRememberMe(!rememberMe)}
-            >
-              <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
-                {rememberMe && <Feather name="check" size={14} color="#FFFFFF" />}
-              </View>
-              <Text style={styles.rememberText}>Remember me nexttime</Text>
             </TouchableOpacity>
           </View>
 
@@ -254,6 +245,7 @@ export default function SignupScreen() {
             style={[styles.signUpButton, loading && styles.buttonDisabled]}
             onPress={handleSignup}
             disabled={loading}
+            activeOpacity={0.8}
           >
             <Text style={styles.signUpButtonText}>
               {loading ? 'Creating Account...' : 'Sign Up'}
@@ -262,7 +254,7 @@ export default function SignupScreen() {
 
           {/* Sign In Link */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have account? </Text>
+            <Text style={styles.footerText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/login')}>
               <Text style={styles.signInText}>Sign In</Text>
             </TouchableOpacity>
@@ -273,13 +265,14 @@ export default function SignupScreen() {
       {/* Department Modal */}
       <Modal
         visible={showDepartmentModal}
-        transparent={true}
+        transparent
         animationType="slide"
         onRequestClose={() => setShowDepartmentModal(false)}
       >
         <View style={styles.modalOverlay}>
           <TouchableOpacity 
-            style={styles.modalBackdrop}
+            style={styles.modalBackdrop} 
+            activeOpacity={1}
             onPress={() => setShowDepartmentModal(false)}
           />
           <View style={styles.departmentModalContent}>
@@ -291,7 +284,7 @@ export default function SignupScreen() {
             </View>
             <ScrollView style={styles.departmentList}>
               {DEPARTMENTS.map((dept, index) => (
-                <TouchableOpacity 
+                <TouchableOpacity
                   key={index}
                   style={[
                     styles.departmentItem,
@@ -306,7 +299,7 @@ export default function SignupScreen() {
                     {dept}
                   </Text>
                   {formData.department === dept && (
-                    <Feather name="check" size={20} color="#1E3A5F" />
+                    <Feather name="check" size={20} color="#1E6FD9" />
                   )}
                 </TouchableOpacity>
               ))}
@@ -326,14 +319,9 @@ export default function SignupScreen() {
             },
           ]}
         >
-          <View
-            style={[
-              styles.toast,
-              toast.type === 'success' ? styles.toastSuccess : styles.toastError,
-            ]}
-          >
+          <View style={[styles.toast, toast.type === 'error' ? styles.toastError : styles.toastSuccess]}>
             <Feather
-              name={toast.type === 'success' ? 'check-circle' : 'alert-circle'}
+              name={toast.type === 'error' ? 'alert-circle' : 'check-circle'}
               size={20}
               color="white"
             />
@@ -348,45 +336,69 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1E6FD9',
   },
-  // EXACTLY SAME AS LOGIN
+  headerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
+    backgroundColor: '#1E6FD9',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 30,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
   logoContainer: {
-    height: 280,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 40,
+    marginBottom: 24,
   },
   logo: {
-    width: 220,
-    height: 220,
-  },
-  // EXACTLY SAME AS LOGIN
-  contentContainer: {
-    flex: 1,
-    paddingHorizontal: 30,
-    paddingTop: 20,
+    width: 70,
+    height: 70,
   },
   title: {
-    fontSize: 36,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
     color: '#1E293B',
+    textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
     color: '#64748B',
-    marginBottom: 30,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 8,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
-    outlineStyle: 'none',
+    paddingVertical: 14,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   inputIcon: {
     marginRight: 12,
@@ -405,37 +417,18 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: '#94A3B8',
   },
-  rememberContainer: {
-    marginBottom: 24,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#CBD5E1',
-    marginRight: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxActive: {
-    backgroundColor: '#1E3A5F',
-    borderColor: '#1E3A5F',
-  },
-  rememberText: {
-    fontSize: 13,
-    color: '#64748B',
-  },
   signUpButton: {
-    backgroundColor: '#1E3A5F',
-    borderRadius: 30,
+    backgroundColor: '#1E6FD9',
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 20,
+    marginTop: 8,
+    shadowColor: '#1E6FD9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -456,7 +449,7 @@ const styles = StyleSheet.create({
   },
   signInText: {
     fontSize: 14,
-    color: '#1E3A5F',
+    color: '#1E6FD9',
     fontWeight: '600',
   },
   // Modal
@@ -499,12 +492,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 8,
     backgroundColor: '#F8FAFC',
   },
   selectedDepartment: {
-    backgroundColor: '#E0E7FF',
+    backgroundColor: '#E0F2FE',
+    borderWidth: 1,
+    borderColor: '#1E6FD9',
   },
   departmentText: {
     fontSize: 15,
@@ -513,7 +508,7 @@ const styles = StyleSheet.create({
   },
   selectedDepartmentText: {
     fontWeight: '600',
-    color: '#1E3A5F',
+    color: '#1E6FD9',
   },
   // Toast
   toastContainer: {
@@ -536,7 +531,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   toastError: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#EF4444',
   },
   toastSuccess: {
     backgroundColor: '#10B981',

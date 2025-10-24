@@ -64,10 +64,10 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, count, color, icon, onPres
   }, [startAnimation, count]);
 
   return (
-    <TouchableOpacity style={styles.statsButton} onPress={onPress}>
+    <TouchableOpacity style={styles.statsButton} onPress={onPress} activeOpacity={0.7}>
       <Animated.View style={[styles.statsCard, { opacity: fadeAnim }]}>
         <View style={[styles.statsIconContainer, { backgroundColor: color }]}>
-          <Feather name={icon} size={24} color="white" />
+          <Feather name={icon} size={32} color="white" />
         </View>
         <Text style={styles.statsCount}>{count}</Text>
         <Text style={styles.statsTitle}>{title}</Text>
@@ -128,26 +128,25 @@ const GrievanceCard: React.FC<GrievanceCardProps> = ({ item, index, onPress, res
   };
 
   return (
-    <TouchableOpacity onPress={onPress}>
-      <Animated.View
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <Animated.View 
         style={[
-          styles.grievanceCard,
-          {
+          styles.grievanceCard, 
+          { 
             opacity: opacityAnim,
-            transform: [{ translateY: slideAnim }],
-          },
+            transform: [{ translateY: slideAnim }]
+          }
         ]}
       >
         <View style={styles.cardHeader}>
           <View style={styles.cardTitleRow}>
             <Text style={styles.cardTitle}>{item.title}</Text>
-            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor() }]}>
-              <Text style={[styles.priorityText, { color: 'white' }]}>{item.priority}</Text>
+            <View style={[styles.priorityBadge, { backgroundColor: `${getPriorityColor()}20` }]}>
+              <Text style={[styles.priorityText, { color: getPriorityColor() }]}>{item.priority}</Text>
             </View>
           </View>
-          <Text style={styles.cardDescription}>{item.description}</Text>
+          <Text style={styles.cardDescription} numberOfLines={2}>{item.description}</Text>
         </View>
-
         <View style={styles.cardFooter}>
           <View style={styles.categoryContainer}>
             <Feather name="tag" size={12} color="#8B5CF6" />
@@ -167,7 +166,7 @@ const GrievanceCard: React.FC<GrievanceCardProps> = ({ item, index, onPress, res
 };
 
 export default function HomeScreen() {
-  const { user, greeting, updateUser } = useUser(); // Add updateUser here
+  const { user, greeting, updateUser } = useUser();
   const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -175,27 +174,14 @@ export default function HomeScreen() {
   const [grievances, setGrievances] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // FIXED: Better Authentication check AND user data refresh
+  // REMOVED AUTH CHECK - Only refresh user data
   useFocusEffect(
     useCallback(() => {
-      const checkAuthAndRefreshUser = async () => {
+      const refreshUserData = async () => {
         try {
-          console.log('Checking auth and refreshing user data...');
-          const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
-          
-          if (!isLoggedIn || isLoggedIn !== 'true') {
-            console.log('Not logged in, redirecting to login...');
-            router.replace('/login');
-            return;
-          }
-
-          // REFRESH USER DATA FROM STORAGE
           const savedProfile = await AsyncStorage.getItem('userProfile');
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
-            console.log('Refreshing user data in home screen:', parsedProfile);
-            
-            // Force update the user context with fresh data
             updateUser({
               name: parsedProfile.name || 'Student Name',
               email: parsedProfile.email || 'student@giet.edu',
@@ -203,19 +189,16 @@ export default function HomeScreen() {
               department: parsedProfile.department || 'Computer Science',
             });
           }
-
-          console.log('Auth check and user refresh completed');
         } catch (error) {
-          console.log('Auth check/user refresh error:', error);
-          router.replace('/login');
+          console.log('Error refreshing user data:', error);
         }
       };
-
-      checkAuthAndRefreshUser();
-    }, []) // Empty dependency to run every time screen focuses
+      refreshUserData();
+    }, [])
   );
 
   const stats = getGrievanceStats(grievances);
+
   const statsData: StatsItem[] = [
     { title: 'Total', count: stats.total, color: '#6366F1', icon: 'file-text' },
     { title: 'Pending', count: stats.pending, color: '#F59E0B', icon: 'clock' },
@@ -265,18 +248,18 @@ export default function HomeScreen() {
   // Show loading state
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, styles.background]}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, color: '#64748B' }}>Loading your grievances...</Text>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.background, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={{ color: '#64748B', fontSize: 16 }}>Loading your grievances...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, styles.background]}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
-      <ScrollView style={styles.safeArea} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.background} showsVerticalScrollIndicator={false}>
         {/* Header - notification icon removed */}
         <View style={styles.header}>
           <View>
@@ -308,8 +291,8 @@ export default function HomeScreen() {
             {grievances.length > 0 ? (
               <>
                 <View style={styles.activityItem}>
-                  <View style={[styles.activityIcon, { backgroundColor: '#6366F1' }]}>
-                    <Feather name="plus" size={16} color="white" />
+                  <View style={[styles.activityIcon, { backgroundColor: '#DBEAFE' }]}>
+                    <Feather name="plus-circle" size={18} color="#2563EB" />
                   </View>
                   <View style={styles.activityContent}>
                     <Text style={styles.activityTitle}>New Submission</Text>
@@ -321,8 +304,8 @@ export default function HomeScreen() {
                   <>
                     <View style={styles.activityDivider} />
                     <View style={styles.activityItem}>
-                      <View style={[styles.activityIcon, { backgroundColor: '#F59E0B' }]}>
-                        <Feather name="refresh-cw" size={16} color="white" />
+                      <View style={[styles.activityIcon, { backgroundColor: '#FEF3C7' }]}>
+                        <Feather name="clock" size={18} color="#F59E0B" />
                       </View>
                       <View style={styles.activityContent}>
                         <Text style={styles.activityTitle}>Status Update</Text>
@@ -336,8 +319,8 @@ export default function HomeScreen() {
                   <>
                     <View style={styles.activityDivider} />
                     <View style={styles.activityItem}>
-                      <View style={[styles.activityIcon, { backgroundColor: '#10B981' }]}>
-                        <Feather name="check" size={16} color="white" />
+                      <View style={[styles.activityIcon, { backgroundColor: '#D1FAE5' }]}>
+                        <Feather name="check-circle" size={18} color="#10B981" />
                       </View>
                       <View style={styles.activityContent}>
                         <Text style={styles.activityTitle}>Grievance Resolved</Text>
@@ -349,8 +332,8 @@ export default function HomeScreen() {
               </>
             ) : (
               <View style={styles.activityItem}>
-                <View style={[styles.activityIcon, { backgroundColor: '#94A3B8' }]}>
-                  <Feather name="clock" size={16} color="white" />
+                <View style={[styles.activityIcon, { backgroundColor: '#F1F5F9' }]}>
+                  <Feather name="info" size={18} color="#64748B" />
                 </View>
                 <View style={styles.activityContent}>
                   <Text style={styles.activityTitle}>No Activity Yet</Text>
@@ -382,10 +365,10 @@ export default function HomeScreen() {
             ))
           ) : (
             <View style={styles.emptyState}>
-              <Feather name="file-plus" size={48} color="#CBD5E1" />
+              <Feather name="inbox" size={64} color="#CBD5E1" />
               <Text style={styles.emptyTitle}>No Grievances Yet</Text>
               <Text style={styles.emptyText}>Start by submitting your first grievance</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.emptyButton}
                 onPress={() => router.push('/submit')}
               >
@@ -399,7 +382,6 @@ export default function HomeScreen() {
   );
 }
 
-// ... (rest of the styles remain the same)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
