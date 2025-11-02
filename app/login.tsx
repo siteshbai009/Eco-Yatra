@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Animated,
   Image,
@@ -13,7 +14,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Dimensions,
 } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const isSmallDevice = height < 700;
 
 // Authorized users - All CSE Department + Admin
 const AUTHORIZED_USERS = [
@@ -64,7 +69,54 @@ export default function LoginScreen() {
   const [toast, setToast] = useState({ visible: false, message: '', type: 'error' });
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(100));
+  
+  // New animations for tech theme
+  const cardAnim = useRef(new Animated.Value(0)).current;
+  const logoAnim = useRef(new Animated.Value(0)).current;
+  const orbAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  
   const router = useRouter();
+
+  useEffect(() => {
+    // Entrance animations
+    Animated.sequence([
+      Animated.timing(orbAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.parallel([
+        Animated.timing(logoAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.spring(cardAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    // Continuous glow animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const showToast = (message: string, type: 'error' | 'success' = 'error') => {
     setToast({ visible: true, message, type });
@@ -80,7 +132,6 @@ export default function LoginScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-
     setTimeout(() => {
       hideToast();
     }, 3000);
@@ -111,7 +162,6 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      // Check if it's email or registration number
       const authorizedUser = AUTHORIZED_USERS.find(
         user => user.email.toLowerCase() === registrationNumber.toLowerCase().trim()
       );
@@ -142,7 +192,6 @@ export default function LoginScreen() {
       await AsyncStorage.setItem('userProfile', JSON.stringify(userData));
       await AsyncStorage.setItem('isLoggedIn', 'true');
       showToast('Login successful!', 'success');
-
       setTimeout(() => {
         router.replace('/(tabs)');
       }, 500);
@@ -155,61 +204,175 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1E6FD9" />
+      <StatusBar barStyle="light-content" backgroundColor="#0A0E27" />
       
-      {/* Blue Header Background */}
-      <View style={styles.headerBackground} />
-      
+      {/* Tech Background - Same as welcome */}
+      <View style={styles.background}>
+        <View style={styles.gridLayer} />
+        
+        {/* Animated Orbs */}
+        <Animated.View 
+          style={[
+            styles.orb1,
+            {
+              opacity: orbAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 0.15],
+              }),
+              transform: [
+                {
+                  scale: orbAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.5, 1],
+                  }),
+                },
+              ],
+            },
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.orb2,
+            {
+              opacity: orbAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 0.1],
+              }),
+            },
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.orb3,
+            {
+              opacity: orbAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 0.12],
+              }),
+            },
+          ]} 
+        />
+      </View>
+
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        {/* White Card Container */}
-        <View style={styles.card}>
-          {/* Logo */}
+        {/* Logo Section */}
+        <Animated.View
+          style={[
+            styles.logoSection,
+            {
+              opacity: logoAnim,
+              transform: [
+                {
+                  translateY: logoAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [30, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
           <View style={styles.logoContainer}>
-            <Image 
-              source={require('../assets/icon.png')} 
-              style={styles.logo}
-              resizeMode="contain"
+            <Animated.View
+              style={[
+                styles.logoGlow,
+                {
+                  opacity: glowAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.2, 0.5],
+                  }),
+                  transform: [
+                    {
+                      scale: glowAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [1, 1.1],
+                      }),
+                    },
+                  ],
+                },
+              ]}
             />
+            <View style={styles.logoWrapper}>
+              <Image 
+                source={require('../assets/icon.png')} 
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
           </View>
+          
+          <View style={styles.titleContainer}>
+            <Text style={styles.appName}>GIET</Text>
+            <View style={styles.glowLine} />
+            <Text style={styles.appSubname}>LOGIN</Text>
+          </View>
+        </Animated.View>
 
-          {/* Title */}
-          <Text style={styles.title}>Grievance Portal Login</Text>
-          <Text style={styles.subtitle}>Welcome back. Please enter your details.</Text>
+        {/* Login Card */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              opacity: cardAnim,
+              transform: [
+                {
+                  translateY: cardAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [50, 0],
+                  }),
+                },
+                {
+                  scale: cardAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.95, 1],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Sign in to access your grievance portal</Text>
 
           {/* Registration Number Input */}
-          <Text style={styles.inputLabel}>Registration Number</Text>
+          <Text style={styles.inputLabel}>Enter your email</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="user" size={20} color="#64748B" style={styles.inputIcon} />
+            <Feather name="user" size={20} color="#00D9FF" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Enter your registration number"
-              placeholderTextColor="#94A3B8"
+              placeholder="Enter your email"
+              placeholderTextColor="#6B7AA1"
               value={registrationNumber}
               onChangeText={setRegistrationNumber}
+              keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
+              editable={!loading}
             />
           </View>
 
           {/* Password Input */}
           <Text style={styles.inputLabel}>Password</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="lock" size={20} color="#64748B" style={styles.inputIcon} />
+            <Feather name="lock" size={20} color="#00D9FF" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Enter your password"
-              placeholderTextColor="#94A3B8"
-              secureTextEntry={!showPassword}
+              placeholderTextColor="#6B7AA1"
               value={password}
               onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              editable={!loading}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
               <Feather 
-                name={showPassword ? 'eye' : 'eye-off'} 
+                name={showPassword ? "eye" : "eye-off"} 
                 size={20} 
-                color="#64748B" 
+                color="#6B7AA1" 
               />
             </TouchableOpacity>
           </View>
@@ -219,16 +382,24 @@ export default function LoginScreen() {
             <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          {/* Sign In Button */}
+          {/* Sign In Button with Gradient */}
           <TouchableOpacity
             style={[styles.signInButton, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Text style={styles.signInButtonText}>
-              {loading ? 'Signing In...' : 'Sign In'}
-            </Text>
+            <LinearGradient
+              colors={['#8B5CF6', '#6366F1']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buttonGradient}
+            >
+              <Text style={styles.signInButtonText}>
+                {loading ? 'Signing In...' : 'Sign In'}
+              </Text>
+              <Feather name="arrow-right" size={20} color="#FFFFFF" />
+            </LinearGradient>
           </TouchableOpacity>
 
           {/* Register Link */}
@@ -238,29 +409,30 @@ export default function LoginScreen() {
               <Text style={styles.registerText}>Register Here</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
 
       {/* Toast */}
       {toast.visible && (
-        <Animated.View
-          style={[
-            styles.toastContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={[styles.toast, toast.type === 'error' ? styles.toastError : styles.toastSuccess]}>
-            <Feather
-              name={toast.type === 'error' ? 'alert-circle' : 'check-circle'}
-              size={20}
-              color="white"
+        <View style={styles.toastContainer}>
+          <Animated.View
+            style={[
+              styles.toast,
+              toast.type === 'error' ? styles.toastError : styles.toastSuccess,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
+            <Feather 
+              name={toast.type === 'error' ? "x-circle" : "check-circle"} 
+              size={20} 
+              color="white" 
             />
             <Text style={styles.toastText}>{toast.message}</Text>
-          </View>
-        </Animated.View>
+          </Animated.View>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -269,70 +441,170 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E6FD9',
+    backgroundColor: '#0A0E27', // Same as welcome screen
   },
-  headerBackground: {
+  
+  // Same background as welcome screen
+  background: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '45%',
-    backgroundColor: '#1E6FD9',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#0A0E27',
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 100,  // Even more space at the top
-    paddingBottom: 30,
+  gridLayer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    opacity: 0.1,
+  },
+  
+  // Same orbs as welcome screen
+  orb1: {
+    position: 'absolute',
+    width: width * 1.2,
+    height: width * 1.2,
+    borderRadius: width * 0.6,
+    backgroundColor: '#1E6FD9',
+    top: -width * 0.5,
+    right: -width * 0.3,
+  },
+  orb2: {
+    position: 'absolute',
+    width: width * 0.8,
+    height: width * 0.8,
+    borderRadius: width * 0.4,
+    backgroundColor: '#00D9FF',
+    bottom: -width * 0.2,
+    left: -width * 0.3,
+  },
+  orb3: {
+    position: 'absolute',
+    width: width * 0.6,
+    height: width * 0.6,
+    borderRadius: width * 0.3,
+    backgroundColor: '#6366F1',
+    top: height * 0.4,
+    right: -width * 0.2,
   },
 
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: width * 0.06,
+    paddingTop: isSmallDevice ? 40 : 60,
+    paddingBottom: isSmallDevice ? 30 : 40,
+    minHeight: height,
+  },
+
+  // Logo section matching welcome screen
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: isSmallDevice ? 30 : 40,
   },
   logoContainer: {
+    position: 'relative',
+    marginBottom: isSmallDevice ? 20 : 24,
+  },
+  logoGlow: {
+    position: 'absolute',
+    width: isSmallDevice ? 90 : 100,
+    height: isSmallDevice ? 90 : 100,
+    borderRadius: isSmallDevice ? 23 : 25,
+    backgroundColor: '#00D9FF',
+    top: -6,
+    left: -6,
+  },
+  logoWrapper: {
+    width: isSmallDevice ? 78 : 88,
+    height: isSmallDevice ? 78 : 88,
+    backgroundColor: '#151B3D',
+    borderRadius: isSmallDevice ? 20 : 22,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: '#00D9FF',
+    shadowColor: '#00D9FF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 10,
   },
   logo: {
-    width: 70,
-    height: 70,
+    width: isSmallDevice ? 50 : 55,
+    height: isSmallDevice ? 50 : 55,
+  },
+  titleContainer: {
+    alignItems: 'center',
+  },
+  appName: {
+    fontSize: isSmallDevice ? 32 : 36,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  glowLine: {
+    width: 50,
+    height: 2,
+    backgroundColor: '#00D9FF',
+    marginVertical: 6,
+    shadowColor: '#00D9FF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+  },
+  appSubname: {
+    fontSize: isSmallDevice ? 12 : 14,
+    fontWeight: '600',
+    color: '#00D9FF',
+    letterSpacing: 4,
+    textTransform: 'uppercase',
+  },
+
+  // Modern card styling
+  card: {
+    backgroundColor: '#151B3D',
+    borderRadius: 24,
+    padding: isSmallDevice ? 24 : 28,
+    marginTop: isSmallDevice ? 20 : 30,
+    borderWidth: 1,
+    borderColor: '#00D9FF',
+    shadowColor: '#00D9FF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 15,
   },
   title: {
-    fontSize: 24,
+    fontSize: isSmallDevice ? 22 : 24,
     fontWeight: '700',
-    color: '#1E293B',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#64748B',
+    fontSize: isSmallDevice ? 13 : 14,
+    color: '#6B7AA1',
     textAlign: 'center',
     marginBottom: 32,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1E293B',
+    color: '#00D9FF',
     marginBottom: 8,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#0F1629',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#1E293B',
   },
   inputIcon: {
     marginRight: 12,
@@ -340,7 +612,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
-    color: '#1E293B',
+    color: '#FFFFFF',
     outlineStyle: 'none',
   },
   forgotContainer: {
@@ -350,20 +622,25 @@ const styles = StyleSheet.create({
   },
   forgotText: {
     fontSize: 14,
-    color: '#1E6FD9',
+    color: '#00D9FF',
     fontWeight: '600',
   },
   signInButton: {
-    backgroundColor: '#1E6FD9',
     borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
     marginBottom: 20,
-    shadowColor: '#1E6FD9',
+    overflow: 'hidden',
+    shadowColor: '#8a5cf6bd',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 8,
+  },
+  buttonGradient: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 16,
+    gap: 8,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -380,13 +657,15 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#64748B',
+    color: '#6B7AA1',
   },
   registerText: {
     fontSize: 14,
-    color: '#1E6FD9',
+    color: '#00D9FF',
     fontWeight: '600',
   },
+
+  // Toast styling
   toastContainer: {
     position: 'absolute',
     bottom: 30,

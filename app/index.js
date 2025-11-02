@@ -15,10 +15,10 @@ export default function Index() {
       await AsyncStorage.removeItem('isLoggedIn');
       await AsyncStorage.removeItem('userProfile');
       console.log('Storage cleared for testing');
-      setRoute('/welcome');
+      setRoute('/splashscreen');  // Changed from '/welcome' to '/splashscreen'
     } catch (error) {
       console.error('Error:', error);
-      setRoute('/welcome');
+      setRoute('/splashscreen');  // Changed from '/welcome' to '/splashscreen'
     }
   };
 

@@ -1,8 +1,9 @@
-er diagram{if possible}
-dataflow diagram{must}
-usecase diagram{must}
-logo build
-frontpage
-login/sign up{auth}
-admin panel
-database{supabase}
+admin panel(ongoing)
+database{supabase}(upcoming)
+
+
+
+
+
+
+DFD to be moodified(Make circle)
