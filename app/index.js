@@ -6,22 +6,30 @@ export default function Index() {
   const [route, setRoute] = useState(null);
 
   useEffect(() => {
-    clearAndCheck();
+    checkLoginStatus();
   }, []);
 
-  // TEMPORARY - Remove this after testing
-  const clearAndCheck = async () => {
+  const checkLoginStatus = async () => {
     try {
-      await AsyncStorage.removeItem('isLoggedIn');
-      await AsyncStorage.removeItem('userProfile');
-      console.log('Storage cleared for testing');
-      setRoute('/splashscreen');  // Changed from '/welcome' to '/splashscreen'
+      const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+      const userProfile = await AsyncStorage.getItem('userProfile');
+      
+      if (isLoggedIn === 'true' && userProfile) {
+        // User is logged in, go directly to main app
+        console.log('User is logged in, redirecting to tabs');
+        setRoute('/(tabs)');
+      } else {
+        // User is not logged in, show splash screen
+        console.log('User is not logged in, showing splash screen');
+        setRoute('/splashscreen');
+      }
     } catch (error) {
-      console.error('Error:', error);
-      setRoute('/splashscreen');  // Changed from '/welcome' to '/splashscreen'
+      console.error('Error checking login status:', error);
+      setRoute('/splashscreen');
     }
   };
 
+  // Show loading state while checking
   if (route === null) {
     return null;
   }
