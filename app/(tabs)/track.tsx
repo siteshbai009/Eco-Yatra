@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -12,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useUser } from '../../UserContext';
 import { getGrievanceStats, GrievanceItem, loadGrievances } from '../../dataStorage';
 
 interface TimelineItem {
@@ -231,6 +233,8 @@ const StatsCard: React.FC<StatsCardProps> = React.memo(({ title, count, animatio
 });
 
 export default function TrackGrievanceScreen() {
+  const { user } = useUser();
+  const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
   const [grievances, setGrievances] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -285,10 +289,28 @@ export default function TrackGrievanceScreen() {
       
       <View style={styles.background}>
         <SafeAreaView style={styles.safeArea}>
-          {/* Header */}
+          {/* Header with Profile Button */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Track Grievances</Text>
-            <Text style={styles.headerSubtitle}>Monitor the progress of your submitted complaints</Text>
+            <View style={styles.headerLeft}>
+              <Text style={styles.headerTitle}>Track Grievances</Text>
+              <Text style={styles.headerSubtitle}>Monitor the progress of your submitted complaints</Text>
+            </View>
+            
+            {/* Profile Button - Top Right */}
+            <TouchableOpacity 
+              style={styles.profileButton}
+              onPress={() => router.push('/(tabs)/profile')}
+              activeOpacity={0.7}
+            >
+              <LinearGradient
+                colors={['#6366F1', '#8B5CF6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.profileGradient}
+              >
+                <Text style={styles.profileInitials}>{user.avatar}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           {/* Stats Summary */}
@@ -342,9 +364,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 20,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  profileButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#6366F1',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  profileGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInitials: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
   },
   headerTitle: {
     fontSize: 32,

@@ -42,7 +42,7 @@ const AUTHORIZED_USERS = [
   },
   {
     email: 'sranjan41509@gmail.com',
-    password: 'Soumyaranjan@123',
+    password: 'Sr@123',
     name: 'Soumya Ranjan',
     department: 'Computer Science & Engineering (CSE)',
   },
