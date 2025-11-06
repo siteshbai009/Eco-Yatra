@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from './lib/supabase';
 
 interface User {
   name: string;
@@ -37,7 +38,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User>(defaultUser);
   const [greeting, setGreeting] = useState('Good Morning');
 
-  // Update greeting based on time
   useEffect(() => {
     updateGreeting();
     const timer = setInterval(updateGreeting, 60000);
@@ -51,6 +51,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async (): Promise<void> => {
     try {
+      await supabase.auth.signOut();
       await AsyncStorage.removeItem('userProfile');
       await AsyncStorage.removeItem('isLoggedIn');
       setUser(defaultUser);
@@ -82,7 +83,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <UserContext.Provider value={{ user: userWithInitials, updateUser, greeting, logout }}>
+    <UserContext.Provider value={{ 
+      user: userWithInitials, 
+      updateUser, 
+      greeting, 
+      logout 
+    }}>
       {children}
     </UserContext.Provider>
   );

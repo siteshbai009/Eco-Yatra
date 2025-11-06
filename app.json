@@ -7,9 +7,11 @@
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
     "platforms": ["ios", "android", "web"],
+
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
       "package": "com.giet.grievance.portal",
       "versionCode": 1,
@@ -18,21 +20,24 @@
         "backgroundColor": "#6366F1"
       },
       "permissions": [],
-      "enableDangerousExperimentalLeanBuilds": true, 
       "softwareKeyboardLayoutMode": "pan"
     },
+
     "web": {
       "bundler": "metro"
     },
+
     "updates": {
       "enabled": false,
       "checkAutomatically": "ON_ERROR_RECOVERY"
     },
-    "developmentClient": false,
+
     "plugins": ["expo-router"],
+
     "experiments": {
       "typedRoutes": true
     },
+
     "extra": {
       "router": {},
       "eas": {

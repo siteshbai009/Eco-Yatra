@@ -1,6 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from './lib/supabase';
 
-// Interface matching your existing data structure
 export interface GrievanceItem {
   id: string;
   title: string;
@@ -12,120 +11,113 @@ export interface GrievanceItem {
   timeline?: any[];
 }
 
-// Demo data (matching your current data)
-const defaultGrievances: GrievanceItem[] = [
-  {
-    id: '1',
-    title: 'WiFi Connection Issues',
-    category: 'Technical',
-    status: 'Resolved',
-    priority: 'High',
-    date: '2 days ago',
-    description: 'Unable to connect to campus WiFi in library',
-    timeline: [
-      { status: 'Submitted', date: 'Oct 8', time: '10:30 AM', description: 'Grievance submitted successfully', completed: true },
-      { status: 'Under Review', date: 'Oct 9', time: '2:15 PM', description: 'IT team reviewing the issue', completed: true },
-      { status: 'In Progress', date: 'Oct 10', time: '9:00 AM', description: 'Technician assigned to fix the issue', completed: true },
-      { status: 'Resolved', date: 'Oct 12', time: '4:00 PM', description: 'WiFi issue resolved successfully', completed: true }
-    ]
-  },
-  {
-    id: '2',
-    title: 'Mess Food Quality',
-    category: 'Facilities',
-    status: 'In Progress',
-    priority: 'Medium',
-    date: '5 hours ago',
-    description: 'Poor quality food served in hostel mess',
-    timeline: [
-      { status: 'Submitted', date: 'Oct 9', time: '3:45 PM', description: 'Complaint registered', completed: true },
-      { status: 'Under Review', date: 'Oct 10', time: '11:30 AM', description: 'Management reviewing complaint', completed: true },
-      { status: 'In Progress', date: 'Oct 11', time: '9:00 AM', description: 'Kitchen staff meeting scheduled', completed: true }
-    ]
-  },
-  {
-    id: '3',
-    title: 'Library Timing Extension',
-    category: 'Administrative',
-    status: 'Resolved',
-    priority: 'Low',
-    date: '1 week ago',
-    description: 'Request to extend library hours during exams',
-    timeline: [
-      { status: 'Submitted', date: 'Oct 5', time: '1:20 PM', description: 'Request submitted', completed: true },
-      { status: 'Under Review', date: 'Oct 6', time: '10:00 AM', description: 'Administration reviewing request', completed: true },
-      { status: 'Approved', date: 'Oct 7', time: '4:30 PM', description: 'Request approved', completed: true },
-      { status: 'Resolved', date: 'Oct 8', time: '9:00 AM', description: 'Extended hours implemented', completed: true }
-    ]
-  },
-  {
-    id: '4',
-    title: 'Broken AC in Classroom',
-    category: 'Infrastructure',
-    status: 'Submitted',
-    priority: 'High',
-    date: '3 days ago',
-    description: 'AC not working in Room 301, Block A',
-    timeline: [
-      { status: 'Submitted', date: 'Oct 1', time: '11:00 AM', description: 'AC repair request submitted', completed: true }
-    ]
-  },
-  {
-    id: '5',
-    title: 'Parking Space Issues',
-    category: 'Infrastructure',
-    status: 'Submitted',
-    priority: 'Medium',
-    date: '1 day ago',
-    description: 'Insufficient parking space for students',
-    timeline: [
-      { status: 'Submitted', date: 'Oct 11', time: '2:30 PM', description: 'Parking complaint submitted', completed: true }
-    ]
-  }
-];
-
-// Storage functions
 export const loadGrievances = async (): Promise<GrievanceItem[]> => {
   try {
-    const stored = await AsyncStorage.getItem('grievances');
-    if (stored) {
-      return JSON.parse(stored);
-    } else {
-      // First time - save default data
-      await AsyncStorage.setItem('grievances', JSON.stringify(defaultGrievances));
-      return defaultGrievances;
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.log('No authenticated user found');
+      return [];
     }
+
+    const { data, error } = await supabase
+      .from('grievances')
+      .select(`
+        *,
+        grievance_timeline (
+          status,
+          description,
+          completed,
+          created_at
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading grievances:', error);
+      return [];
+    }
+
+    return data.map(item => ({
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      status: item.status,
+      priority: item.priority,
+      date: formatDate(item.created_at),
+      description: item.description,
+      timeline: item.grievance_timeline?.map((t: any) => ({
+        status: t.status,
+        date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        time: new Date(t.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        description: t.description,
+        completed: t.completed
+      }))
+    }));
   } catch (error) {
     console.error('Error loading grievances:', error);
-    return defaultGrievances;
+    return [];
   }
 };
 
-export const saveGrievance = async (newGrievance: Omit<GrievanceItem, 'id' | 'status' | 'timeline' | 'date'>): Promise<void> => {
+export const saveGrievance = async (newGrievance: Omit<GrievanceItem, 'id' | 'date' | 'timeline'>): Promise<void> => {
   try {
-    const existingGrievances = await loadGrievances();
+    const { data: { user } } = await supabase.auth.getUser();
     
-    const grievanceWithDetails: GrievanceItem = {
-      ...newGrievance,
-      id: Date.now().toString(),
-      status: 'Submitted',
-      date: 'Just now',
-      timeline: [
-        {
-          status: 'Submitted',
-          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-          description: 'Grievance submitted successfully',
-          completed: true
-        }
-      ]
-    };
-    
-    const updatedGrievances = [grievanceWithDetails, ...existingGrievances];
-    await AsyncStorage.setItem('grievances', JSON.stringify(updatedGrievances));
+    if (!user) {
+      console.error('No authenticated user - cannot save grievance');
+      throw new Error('User not authenticated');
+    }
+
+    console.log('Saving grievance for user:', user.id);
+
+    const { error } = await supabase
+      .from('grievances')
+      .insert([{
+        user_id: user.id,
+        title: newGrievance.title,
+        category: newGrievance.category,
+        subcategory: (newGrievance as any).subcategory || null, // Add subcategory
+        description: newGrievance.description,
+        status: 'Submitted',
+        priority: newGrievance.priority || 'Medium',
+        attachment_count: (newGrievance as any).attachmentCount || 0 // Add attachment count
+      }]);
+
+    if (error) {
+      console.error('Error saving grievance:', error);
+      throw error;
+    }
+
+    console.log('Grievance saved successfully');
   } catch (error) {
     console.error('Error saving grievance:', error);
     throw error;
+  }
+};
+
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+  
+  if (diffDays === 0) {
+    if (diffHours === 0) {
+      return 'Just now';
+    }
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffDays === 1) {
+    return '1 day ago';
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  } else if (diffDays < 14) {
+    return '1 week ago';
+  } else {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 };
 
@@ -133,6 +125,5 @@ export const getGrievanceStats = (grievances: GrievanceItem[]) => {
   const total = grievances.length;
   const resolved = grievances.filter(g => g.status === 'Resolved').length;
   const pending = total - resolved;
-  
   return { total, resolved, pending };
 };

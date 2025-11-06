@@ -1,6 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -19,7 +21,18 @@ import {
 } from 'react-native';
 import { saveGrievance } from '../../dataStorage';
 
-// Grievance Categories with Subcategories
+// === Cyan theme tokens ===
+const CYAN = {
+  accent: '#06B6D4',
+  accent2: '#22D3EE',
+  glow: 'rgba(6,182,212,0.28)',
+  glowBorder: 'rgba(6,182,212,0.45)',
+  text: '#0F172A',
+  textMuted: '#64748B',
+  white: '#FFFFFF',
+  line: '#E2E8F0',
+};
+
 const GRIEVANCE_CATEGORIES = [
   {
     id: 'academics',
@@ -178,6 +191,7 @@ export default function SubmitGrievanceScreen() {
   const [isAttachmentModalVisible, setAttachmentModalVisible] = useState(false);
   const [isSuccessModalVisible, setSuccessModalVisible] = useState(false);
   const [submittedData, setSubmittedData] = useState<any>(null);
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const successFadeAnim = useRef(new Animated.Value(0)).current;
   const successScaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -192,8 +206,7 @@ export default function SubmitGrievanceScreen() {
 
   const currentCategory = GRIEVANCE_CATEGORIES.find(cat => cat.id === selectedCategory);
 
-  // Check if form is valid for submit button
-  // Title: minimum 5 words, Description: minimum 15 words
+  // Same validation logic (unchanged)
   const titleWords = title.trim().split(/\s+/).filter(w => w).length;
   const descriptionWords = description.trim().split(/\s+/).filter(w => w).length;
 
@@ -274,20 +287,24 @@ export default function SubmitGrievanceScreen() {
       category: currentCategory?.name,
       subcategory: selectedSubcategory,
       description,
-      attachmentCount: attachments.length
+      attachmentCount: attachments.length,
     };
 
     try {
       await saveGrievance({
         title,
         category: currentCategory?.name || '',
-        description
-      });
+        subcategory: selectedSubcategory,
+        description,
+        priority: 'Medium',
+        attachmentCount: attachments.length,
+      } as any);
 
       clearForm();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showSuccessModal(dataToSubmit);
     } catch (error) {
+      console.error('Submit error:', error);
       Alert.alert("Error", "Failed to submit grievance. Please try again.");
     }
   };
@@ -364,166 +381,177 @@ export default function SubmitGrievanceScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+      <StatusBar barStyle="dark-content" backgroundColor={CYAN.white} />
 
-      <View style={styles.background}>
-        <ScrollView style={styles.safeArea} showsVerticalScrollIndicator={false}>
-          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}>Submit Grievance</Text>
-              <Text style={styles.headerSubtitle}>We're here to help resolve your concerns</Text>
+      {/* Extended glass header with cyan fade */}
+      <View style={styles.headerWrap}>
+        <LinearGradient
+          colors={['rgba(34,211,238,0.18)', 'rgba(255,255,255,0)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <BlurView intensity={20} tint="light" style={styles.headerGlass} />
+        <View style={styles.headerInner}>
+          <Text style={styles.headerTitle}>Submit Grievance</Text>
+          <Text style={styles.headerSubtitle}>We're here to help resolve your concerns</Text>
+        </View>
+      </View>
+
+      <ScrollView
+  style={styles.bodyScroll}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 160 }} // 👈 smooth bottom space for submit button
+>
+
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+
+          {/* Title */}
+          <View style={styles.inputSection}>
+            <View style={styles.labelRow}>
+              <Text style={styles.inputLabel}>Title <Text style={styles.requiredText}>*</Text></Text>
+              <Text style={styles.charCount}>{titleWords}/5 words</Text>
             </View>
+            <View style={[styles.glowField]}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Brief description of your issue (minimum 5 words)"
+                placeholderTextColor={CYAN.textMuted}
+                value={title}
+                onChangeText={setTitle}
+                maxLength={100}
+              />
+            </View>
+          </View>
 
-            <View style={styles.scrollView}>
-              {/* Title Input */}
-              <View style={styles.inputSection}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.inputLabel}>Title <Text style={styles.requiredText}>*</Text></Text>
-                  <Text style={styles.charCount}>
-                    {titleWords}/5 words
-                  </Text>
-                </View>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Brief description of your issue (minimum 5 words)"
-                    placeholderTextColor="#94A3B8"
-                    value={title}
-                    onChangeText={setTitle}
-                    maxLength={100}
-                  />
-                </View>
-              </View>
-
-              {/* Category Selection */}
-              <View style={styles.inputSection}>
-                <Text style={styles.inputLabel}>Category <Text style={styles.requiredText}>*</Text></Text>
-                <TouchableOpacity
-                  style={styles.categorySelector}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setCategoryModalVisible(true);
-                  }}
-                >
-                  <View style={styles.categoryContent}>
-                    {selectedCategory ? (
-                      <View style={styles.selectedCategory}>
-                        <View style={[styles.categoryIcon, { backgroundColor: currentCategory?.color }]}>
-                          <Feather name={currentCategory?.icon as any} size={20} color="white" />
-                        </View>
-                        <Text style={styles.categoryText}>{currentCategory?.name}</Text>
-                      </View>
-                    ) : (
-                      <Text style={styles.categoryPlaceholder}>Select Category</Text>
-                    )}
-                    <Feather name="chevron-right" size={20} color="#94A3B8" />
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              {/* Subcategory Selection */}
-              {selectedCategory && (
-                <View style={styles.inputSection}>
-                  <Text style={styles.inputLabel}>Subcategory <Text style={styles.requiredText}>*</Text></Text>
-                  <TouchableOpacity
-                    style={styles.categorySelector}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setSubcategoryModalVisible(true);
-                    }}
-                  >
-                    <View style={styles.categoryContent}>
-                      {selectedSubcategory ? (
-                        <Text style={styles.categoryText}>{selectedSubcategory}</Text>
-                      ) : (
-                        <Text style={styles.categoryPlaceholder}>Select Subcategory</Text>
-                      )}
-                      <Feather name="chevron-right" size={20} color="#94A3B8" />
+          {/* Category */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>Category <Text style={styles.requiredText}>*</Text></Text>
+            <TouchableOpacity
+              style={styles.glowField}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setCategoryModalVisible(true);
+              }}
+            >
+              <View style={styles.categoryContent}>
+                {selectedCategory ? (
+                  <View style={styles.selectedCategory}>
+                    <View style={[styles.categoryIcon, { backgroundColor: currentCategory?.color || CYAN.accent }]}>
+                      <Feather name={(currentCategory?.icon as any) || 'tag'} size={20} color="white" />
                     </View>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {/* Description Input */}
-              <View style={styles.inputSection}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.inputLabel}>Description <Text style={styles.requiredText}>*</Text></Text>
-                  <Text style={styles.charCount}>
-                    {descriptionWords}/15 words
-                  </Text>
-                </View>
-                <View style={[styles.inputContainer, styles.descriptionContainer]}>
-                  <TextInput
-                    style={[styles.textInput, styles.descriptionInput]}
-                    placeholder="Describe your issue in detail (minimum 15 words)..."
-                    placeholderTextColor="#94A3B8"
-                    value={description}
-                    onChangeText={setDescription}
-                    multiline
-                    maxLength={500}
-                  />
-                </View>
-              </View>
-
-              {/* Attachments Section - OPTIONAL */}
-              <View style={styles.inputSection}>
-                <Text style={styles.inputLabel}>
-                  Attachments ({attachments.length})
-                </Text>
-
-                {attachments.length > 0 && (
-                  <View style={styles.attachmentPreview}>
-                    {attachments.map((attachment) => (
-                      <View key={attachment.id} style={styles.attachmentItem}>
-                        <Image source={{ uri: attachment.uri }} style={styles.attachmentImage} />
-                        <View style={styles.attachmentInfo}>
-                          <Text style={styles.attachmentName}>{attachment.name}</Text>
-                          <Text style={styles.attachmentSize}>{formatFileSize(attachment.size)}</Text>
-                        </View>
-                        <TouchableOpacity
-                          style={styles.removeButton}
-                          onPress={() => removeAttachment(attachment.id)}
-                        >
-                          <Feather name="x" size={16} color="#EF4444" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
+                    <Text style={styles.categoryText}>{currentCategory?.name}</Text>
                   </View>
+                ) : (
+                  <Text style={styles.categoryPlaceholder}>Select Category</Text>
                 )}
-
-                <TouchableOpacity
-                  style={styles.attachmentButton}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setAttachmentModalVisible(true);
-                  }}
-                >
-                  <View style={styles.attachmentContent}>
-                    <Feather name="camera" size={24} color="#6366F1" />
-                    <Text style={styles.attachmentText}>Add Photos (Optional)</Text>
-                    <Text style={styles.attachmentSubtext}>Camera or Gallery</Text>
-                  </View>
-                </TouchableOpacity>
+                <Feather name="chevron-right" size={20} color={CYAN.textMuted} />
               </View>
+            </TouchableOpacity>
+          </View>
 
-              {/* Submit Button - DISABLED until all required fields are filled */}
+          {/* Subcategory */}
+          {selectedCategory && (
+            <View style={styles.inputSection}>
+              <Text style={styles.inputLabel}>Subcategory <Text style={styles.requiredText}>*</Text></Text>
               <TouchableOpacity
-                style={[styles.submitButton, !isFormValid && styles.submitButtonDisabled]}
-                onPress={handleSubmit}
-                disabled={!isFormValid}
+                style={styles.glowField}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setSubcategoryModalVisible(true);
+                }}
               >
-                <View style={styles.submitContent}>
-                  <Feather name="send" size={20} color="white" />
-                  <Text style={styles.submitText}>
-                    {isFormValid ? 'Submit Grievance' : 'Fill All Fields'}
-                  </Text>
+                <View style={styles.categoryContent}>
+                  {selectedSubcategory ? (
+                    <Text style={styles.categoryText}>{selectedSubcategory}</Text>
+                  ) : (
+                    <Text style={styles.categoryPlaceholder}>Select Subcategory</Text>
+                  )}
+                  <Feather name="chevron-right" size={20} color={CYAN.textMuted} />
                 </View>
               </TouchableOpacity>
             </View>
-          </Animated.View>
-        </ScrollView>
-      </View>
+          )}
+
+          {/* Description */}
+          <View style={styles.inputSection}>
+            <View style={styles.labelRow}>
+              <Text style={styles.inputLabel}>Description <Text style={styles.requiredText}>*</Text></Text>
+              <Text style={styles.charCount}>{descriptionWords}/15 words</Text>
+            </View>
+            <View style={[styles.glowField, styles.descriptionContainer]}>
+              <TextInput
+                style={[styles.textInput, styles.descriptionInput]}
+                placeholder="Describe your issue in detail (minimum 15 words)..."
+                placeholderTextColor={CYAN.textMuted}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                maxLength={500}
+              />
+            </View>
+          </View>
+
+          {/* Attachments */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>Attachments ({attachments.length})</Text>
+
+            {attachments.length > 0 && (
+              <View style={styles.attachmentPreview}>
+                {attachments.map((attachment) => (
+                  <View key={attachment.id} style={styles.attachmentItem}>
+                    <Image source={{ uri: attachment.uri }} style={styles.attachmentImage} />
+                    <View style={styles.attachmentInfo}>
+                      <Text style={styles.attachmentName}>{attachment.name}</Text>
+                      <Text style={styles.attachmentSize}>{formatFileSize(attachment.size)}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeAttachment(attachment.id)}
+                    >
+                      <Feather name="x" size={16} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[styles.glowField, styles.attachmentButton]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setAttachmentModalVisible(true);
+              }}
+            >
+              <View style={styles.attachmentContent}>
+                <Feather name="camera" size={24} color={CYAN.accent} />
+                <Text style={[styles.attachmentText, { color: CYAN.accent }]}>Add Photos (Optional)</Text>
+                <Text style={styles.attachmentSubtext}>Camera or Gallery</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Submit */}
+          <TouchableOpacity
+            style={[styles.submitButton, !isFormValid && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={!isFormValid}
+          >
+            <LinearGradient
+              colors={isFormValid ? [CYAN.accent, CYAN.accent2] : ['#CBD5E1', '#CBD5E1']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.submitGradient}
+            >
+              <Feather name="send" size={20} color="white" />
+              <Text style={styles.submitText}>
+                {isFormValid ? 'Submit Grievance' : 'Fill All Fields'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+        </Animated.View>
+      </ScrollView>
 
       {/* Category Modal */}
       <Modal
@@ -608,16 +636,16 @@ export default function SubmitGrievanceScreen() {
             </View>
             <View style={styles.attachmentOptions}>
               <TouchableOpacity style={styles.attachmentOptionButton} onPress={pickImageFromCamera}>
-                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#DBEAFE' }]}>
-                  <Feather name="camera" size={32} color="#3B82F6" />
+                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#E0F7FA', borderColor: CYAN.glowBorder, borderWidth: 1 }]}>
+                  <Feather name="camera" size={32} color={CYAN.accent} />
                 </View>
                 <Text style={styles.attachmentOptionTitle}>Take Photo</Text>
                 <Text style={styles.attachmentOptionSubtitle}>Use camera to capture evidence</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.attachmentOptionButton} onPress={pickImageFromGallery}>
-                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#F3E8FF' }]}>
-                  <Feather name="image" size={32} color="#8B5CF6" />
+                <View style={[styles.attachmentOptionIcon, { backgroundColor: '#F0FDFF', borderColor: CYAN.glowBorder, borderWidth: 1 }]}>
+                  <Feather name="image" size={32} color={CYAN.accent2} />
                 </View>
                 <Text style={styles.attachmentOptionTitle}>Choose from Gallery</Text>
                 <Text style={styles.attachmentOptionSubtitle}>Select existing photos</Text>
@@ -663,20 +691,20 @@ export default function SubmitGrievanceScreen() {
             {submittedData && (
               <View style={styles.successDetails}>
                 <View style={styles.successDetailRow}>
-                  <Feather name="file-text" size={16} color="#6366F1" />
+                  <Feather name="file-text" size={16} color={CYAN.accent} />
                   <Text style={styles.successDetailText}>{submittedData.title}</Text>
                 </View>
                 <View style={styles.successDetailRow}>
-                  <Feather name="tag" size={16} color="#6366F1" />
+                  <Feather name="tag" size={16} color={CYAN.accent} />
                   <Text style={styles.successDetailText}>{submittedData.category}</Text>
                 </View>
                 <View style={styles.successDetailRow}>
-                  <Feather name="info" size={16} color="#6366F1" />
+                  <Feather name="info" size={16} color={CYAN.accent} />
                   <Text style={styles.successDetailText}>{submittedData.subcategory}</Text>
                 </View>
                 {submittedData.attachmentCount > 0 && (
                   <View style={styles.successDetailRow}>
-                    <Feather name="paperclip" size={16} color="#6366F1" />
+                    <Feather name="paperclip" size={16} color={CYAN.accent} />
                     <Text style={styles.successDetailText}>{submittedData.attachmentCount} Attachment(s)</Text>
                   </View>
                 )}
@@ -709,146 +737,187 @@ export default function SubmitGrievanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  background: { flex: 1, backgroundColor: '#F8FAFC' },
-  safeArea: { flex: 1 },
-  content: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 30 },
-  headerTitle: { fontSize: 32, fontWeight: 'bold', color: '#1E293B', marginBottom: 8 },
-  headerSubtitle: { fontSize: 16, color: '#64748B' },
-  scrollView: { flex: 1, paddingHorizontal: 20 },
-  inputSection: { marginBottom: 24 },
-  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  inputLabel: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
+  // Layout
+  container: { flex: 1, backgroundColor: CYAN.white },
+  bodyScroll: { flex: 1 },
+  content: { paddingHorizontal: 20, paddingBottom: 40 },
+
+  // Extended glass header
+  headerWrap: {
+    paddingTop: 14,
+    paddingBottom: 22,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    overflow: 'hidden',
+  },
+  headerGlass: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  headerInner: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  headerTitle: { fontSize: 32, fontWeight: 'bold', color: CYAN.text, marginBottom: 6 },
+  headerSubtitle: { fontSize: 16, color: CYAN.textMuted },
+
+  // Sections
+  inputSection: { marginTop: 22 },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  inputLabel: { fontSize: 14, fontWeight: '600', color: CYAN.text },
   requiredText: { color: '#EF4444' },
   charCount: { fontSize: 12, color: '#94A3B8' },
-  inputContainer: {
-  backgroundColor: 'white',
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: '#E2E8F0',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.05,
-  shadowRadius: 4,
-  elevation: 2,
-  overflow: 'hidden',
-},
 
-  textInput: { 
-  padding: 16, 
-  fontSize: 16, 
-  color: '#1E293B', 
-  minHeight: 56,
-  selectionColor: 'transparent',
-  selectionHandleColor: 'transparent',
-},
+  // Glow field (glass-ish white with cyan border + soft shadow)
+  glowField: {
+    backgroundColor: CYAN.white,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: CYAN.glowBorder,
+    shadowColor: CYAN.accent,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    elevation: 5,
+    overflow: 'hidden',
+  },
 
+  // Inputs
+  textInput: {
+    padding: 16,
+    fontSize: 16,
+    color: CYAN.text,
+    minHeight: 56,
+    selectionColor: CYAN.accent,
+  },
   descriptionContainer: { marginBottom: 8 },
   descriptionInput: { minHeight: 120, textAlignVertical: 'top' },
-  categorySelector: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+
+  // Category rows
   categoryContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
   selectedCategory: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   categoryIcon: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  categoryText: { fontSize: 16, color: '#1E293B', fontWeight: '500' },
+  categoryText: { fontSize: 16, color: CYAN.text, fontWeight: '500' },
   categoryPlaceholder: { fontSize: 16, color: '#94A3B8' },
-  attachmentPreview: { marginBottom: 12 },
-  attachmentItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 12, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: '#E2E8F0', gap: 12 },
+
+  // Attachments
+  attachmentPreview: { marginBottom: 12, marginTop: 12 },
+  attachmentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: CYAN.white,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 12,
+  },
   attachmentImage: { width: 48, height: 48, borderRadius: 8 },
   attachmentInfo: { flex: 1 },
-  attachmentName: { fontSize: 14, fontWeight: '500', color: '#1E293B', marginBottom: 2 },
-  attachmentSize: { fontSize: 12, color: '#64748B' },
+  attachmentName: { fontSize: 14, fontWeight: '500', color: CYAN.text, marginBottom: 2 },
+  attachmentSize: { fontSize: 12, color: CYAN.textMuted },
   removeButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' },
-  attachmentButton: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#E2E8F0',
-    borderStyle: 'dashed',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  attachmentContent: { alignItems: 'center', padding: 24, gap: 8 },
-  attachmentText: { fontSize: 16, color: '#6366F1', fontWeight: '600' },
+
+  attachmentButton: {}, // using glowField base
+  attachmentContent: { alignItems: 'center', padding: 20, gap: 6 },
+  attachmentText: { fontSize: 16, fontWeight: '700' },
   attachmentSubtext: { fontSize: 12, color: '#94A3B8' },
+
+  // Submit
   submitButton: {
-    marginBottom: 100,
+    marginTop: 50,
+    marginBottom: 130,
     borderRadius: 16,
-    backgroundColor: '#6366F1',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowColor: CYAN.accent,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
     elevation: 8,
+    overflow: 'hidden',
   },
   submitButtonDisabled: {
-    backgroundColor: '#CBD5E1',
-    shadowColor: '#CBD5E1',
-    opacity: 0.6,
+    shadowOpacity: 0.08,
   },
-  submitContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 18, gap: 12 },
+  submitGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 18, gap: 12 },
   submitText: { fontSize: 16, fontWeight: 'bold', color: 'white' },
+
+  // Modals
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '70%' },
+  modalContent: {
+    backgroundColor: CYAN.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '70%',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#1E293B' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: CYAN.text },
   categoryList: { maxHeight: 400 },
   categoryOption: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
-  categoryOptionText: { flex: 1, fontSize: 16, color: '#1E293B', fontWeight: '500' },
+  categoryOptionText: { flex: 1, fontSize: 16, color: CYAN.text, fontWeight: '500' },
+
   attachmentOptions: { padding: 20, gap: 16 },
-  attachmentOptionButton: { alignItems: 'center', padding: 24, backgroundColor: '#F8FAFC', borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0' },
-  attachmentOptionIcon: { width: 72, height: 72, borderRadius: 36, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  attachmentOptionTitle: { fontSize: 18, fontWeight: '600', color: '#1E293B', marginBottom: 4 },
-  attachmentOptionSubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center' },
+  attachmentOptionButton: {
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: CYAN.white,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: CYAN.glowBorder,
+    shadowColor: CYAN.accent,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 14,
+    elevation: 5,
+  },
+  attachmentOptionIcon: {
+    width: 72, height: 72, borderRadius: 36,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 12,
+  },
+  attachmentOptionTitle: { fontSize: 16, fontWeight: '700', color: CYAN.text, marginBottom: 2 },
+  attachmentOptionSubtitle: { fontSize: 13, color: CYAN.textMuted, textAlign: 'center' },
+
+  // Success modal
   successOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
   successModal: {
-    backgroundColor: 'white',
+    backgroundColor: CYAN.white,
     borderRadius: 24,
     padding: 30,
     alignItems: 'center',
     maxWidth: 350,
     width: '100%',
-    shadowColor: '#000',
+    shadowColor: CYAN.accent,
     shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 20,
-    elevation: 20,
+    elevation: 18,
   },
   successIconContainer: { marginBottom: 20 },
   successIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#10B981',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#10B981',
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: CYAN.accent,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: CYAN.accent,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 8,
   },
-  successTitle: { fontSize: 24, fontWeight: 'bold', color: '#1E293B', marginBottom: 12, textAlign: 'center' },
-  successMessage: { fontSize: 16, color: '#64748B', textAlign: 'center', lineHeight: 24, marginBottom: 24 },
-  successDetails: { width: '100%', backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, marginBottom: 24, gap: 12 },
+  successTitle: { fontSize: 22, fontWeight: 'bold', color: CYAN.text, marginBottom: 10, textAlign: 'center' },
+  successMessage: { fontSize: 15, color: CYAN.textMuted, textAlign: 'center', lineHeight: 22, marginBottom: 18 },
+
+  successDetails: { width: '100%', backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, marginBottom: 22, gap: 12, borderWidth: 1, borderColor: '#EEF2F7' },
   successDetailRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  successDetailText: { fontSize: 14, color: '#1E293B', fontWeight: '500', flex: 1 },
+  successDetailText: { fontSize: 14, color: CYAN.text, fontWeight: '500', flex: 1 },
+
   successButtons: { flexDirection: 'row', gap: 12, width: '100%' },
   successButtonSecondary: { flex: 1, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center' },
-  successButtonSecondaryText: { fontSize: 16, fontWeight: '600', color: '#6366F1' },
-  successButtonPrimary: { flex: 1, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12, backgroundColor: '#6366F1', alignItems: 'center' },
-  successButtonPrimaryText: { fontSize: 16, fontWeight: '600', color: 'white' },
+  successButtonSecondaryText: { fontSize: 16, fontWeight: '700', color: CYAN.accent },
+  successButtonPrimary: {
+    flex: 1, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12, alignItems: 'center',
+    backgroundColor: CYAN.accent,
+    shadowColor: CYAN.accent, shadowOpacity: 0.2, shadowRadius: 10, elevation: 6,
+  },
+  successButtonPrimaryText: { fontSize: 16, fontWeight: '700', color: 'white' },
 });

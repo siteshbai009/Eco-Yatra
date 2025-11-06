@@ -1,9 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   Animated,
   FlatList,
   SafeAreaView,
@@ -13,268 +12,135 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useUser } from '../../UserContext';
 import { getGrievanceStats, GrievanceItem, loadGrievances } from '../../dataStorage';
 
-interface TimelineItem {
-  status: string;
-  date: string;
-  time: string;
-  description: string;
-  completed: boolean;
-}
-
-interface TrackCardProps {
-  item: GrievanceItem;
-  index: number;
-}
-
-const TrackCard: React.FC<TrackCardProps> = React.memo(({ item, index }) => {
-  const slideAnim = useMemo(() => new Animated.Value(0), []);
-  const opacityAnim = useMemo(() => new Animated.Value(1), []);
-
-  useEffect(() => {
-    // Simple entrance animation only once
-    slideAnim.setValue(50);
-    opacityAnim.setValue(0);
-    
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 400,
-        delay: index * 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 50,
-        useNativeDriver: true,
-      })
-    ]).start();
-  }, []); // Only run once when component mounts
-
-  const getStatusColor = useCallback((): string => {
-    switch (item.status) {
-      case 'Resolved': return '#10B981';
-      case 'In Progress': return '#F59E0B';
-      case 'Under Review': return '#8B5CF6';
-      default: return '#6B7280';
-    }
-  }, [item.status]);
-
-  const getPriorityColor = useCallback((): string => {
-    switch (item.priority) {
-      case 'High': return '#EF4444';
-      case 'Medium': return '#F59E0B';
-      default: return '#10B981';
-    }
-  }, [item.priority]);
-
-  const getCategoryColor = useCallback((): string => {
-    switch (item.category) {
-      case 'Technical': return '#6366F1';
-      case 'Facilities': return '#EF4444';
-      case 'Administrative': return '#8B5CF6';
-      case 'Infrastructure': return '#10B981';
-      case 'Academics': return '#8B5CF6';
-      case 'Hostel': return '#06B6D4';
-      default: return '#6366F1';
-    }
-  }, [item.category]);
-
-  const handleCardPress = useCallback(() => {
-    if (item.timeline && item.timeline.length > 0) {
-      const timelineText = item.timeline
-        .map(t => `• ${t.status} (${t.date} ${t.time})\n  ${t.description}`)
-        .join('\n\n');
-      
-      Alert.alert(
-        `${item.title} - Timeline`,
-        timelineText,
-        [{ text: "OK" }]
-      );
-    } else {
-      Alert.alert(
-        item.title,
-        `Status: ${item.status}\nCategory: ${item.category}\nPriority: ${item.priority}\nDate: ${item.date}\n\nDescription: ${item.description}`,
-        [{ text: "OK" }]
-      );
-    }
-  }, [item]);
-
-  return (
-    <TouchableOpacity onPress={handleCardPress} activeOpacity={0.9}>
-      <Animated.View 
-        style={[
-          styles.trackCard, 
-          { 
-            transform: [{ translateY: slideAnim }],
-            opacity: opacityAnim 
-          }
-        ]}
-      >
-        {/* Card Header */}
-        <View style={styles.cardHeader}>
-          <View style={styles.cardTitleRow}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '15' }]}>
-              <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
-              <Text style={[styles.statusText, { color: getStatusColor() }]}>
-                {item.status}
-              </Text>
-            </View>
-          </View>
-          
-          {/* Description */}
-          <Text style={styles.cardDescription}>{item.description}</Text>
-          
-          <View style={styles.cardMeta}>
-            <View style={styles.metaItem}>
-              <Feather name="tag" size={12} color={getCategoryColor()} />
-              <Text style={[styles.metaText, { color: getCategoryColor() }]}>{item.category}</Text>
-            </View>
-            <View style={styles.metaItem}>
-              <Feather name="calendar" size={12} color="#64748B" />
-              <Text style={styles.metaText}>{item.date}</Text>
-            </View>
-            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor() + '15' }]}>
-              <Text style={[styles.priorityText, { color: getPriorityColor() }]}>
-                {item.priority}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Timeline */}
-        {item.timeline && item.timeline.length > 0 && (
-          <View style={styles.timelineContainer}>
-            <Text style={styles.timelineTitle}>Progress Timeline</Text>
-            {item.timeline.map((timelineItem, timelineIndex) => (
-              <View key={timelineIndex} style={styles.timelineItem}>
-                <View style={styles.timelineLeft}>
-                  <View 
-                    style={[
-                      styles.timelineDot,
-                      { 
-                        backgroundColor: timelineItem.completed ? getStatusColor() : '#E2E8F0'
-                      }
-                    ]}
-                  />
-                  {timelineIndex < item.timeline!.length - 1 && (
-                    <View 
-                      style={[
-                        styles.timelineLine, 
-                        { backgroundColor: timelineItem.completed ? getStatusColor() : '#E2E8F0' }
-                      ]} 
-                    />
-                  )}
-                </View>
-                <View style={styles.timelineRight}>
-                  <View style={styles.timelineHeader}>
-                    <Text 
-                      style={[
-                        styles.timelineStatus,
-                        { 
-                          color: timelineItem.completed ? '#1E293B' : '#94A3B8' 
-                        }
-                      ]}
-                    >
-                      {timelineItem.status}
-                    </Text>
-                    <Text style={styles.timelineDateTime}>
-                      {timelineItem.date} • {timelineItem.time}
-                    </Text>
-                  </View>
-                  <Text 
-                    style={[
-                      styles.timelineDescription,
-                      { 
-                        color: timelineItem.completed ? '#64748B' : '#94A3B8' 
-                      }
-                    ]}
-                  >
-                    {timelineItem.description}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-      </Animated.View>
-    </TouchableOpacity>
-  );
-});
-
-interface StatsCardProps {
-  title: string;
-  count: number;
-  animationDelay: number;
-}
-
-const StatsCard: React.FC<StatsCardProps> = React.memo(({ title, count, animationDelay }) => {
-  const fadeAnim = useMemo(() => new Animated.Value(0), []);
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      delay: animationDelay,
-      useNativeDriver: true,
-    }).start();
-  }, [animationDelay]);
-
-  return (
-    <Animated.View style={[styles.statsCard, { opacity: fadeAnim }]}>
-      <Text style={styles.statsNumber}>{count}</Text>
-      <Text style={styles.statsLabel}>{title}</Text>
-    </Animated.View>
-  );
-});
+const CYAN = {
+  main: '#06B6D4',
+  light: '#22D3EE',
+};
 
 export default function TrackGrievanceScreen() {
   const { user } = useUser();
   const router = useRouter();
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const [grievances, setGrievances] = useState<GrievanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const toastAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
 
-  // Calculate stats dynamically
   const stats = useMemo(() => getGrievanceStats(grievances), [grievances]);
 
-  // Load grievances from storage
   const loadData = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const loadedGrievances = await loadGrievances();
-      setGrievances(loadedGrievances);
+      setRefreshing(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      // Animate icon spin
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        })
+      ).start();
+
+      // Fade in toast
+      Animated.timing(toastAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+
+      const data = await loadGrievances();
+      setGrievances(data);
     } catch (error) {
       console.error('Error loading grievances:', error);
     } finally {
       setIsLoading(false);
+      setTimeout(() => {
+        Animated.timing(toastAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+        rotateAnim.stopAnimation();
+        rotateAnim.setValue(0);
+        setRefreshing(false);
+      }, 1500);
     }
   }, []);
 
-  // This runs every time the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadData();
-      setRefreshKey(prev => prev + 1);
     }, [loadData])
   );
 
-  // Render item function with proper key
-  const renderItem = useCallback(({ item, index }: { item: GrievanceItem; index: number }) => (
-    <TrackCard 
-      item={item} 
-      index={index}
-    />
-  ), []);
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
-  // Key extractor
-  const keyExtractor = useCallback((item: GrievanceItem) => item.id, []);
+  const renderItem = ({ item }: { item: GrievanceItem }) => (
+    <View style={styles.trackCard}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: item.status === 'Resolved' ? '#10B98120' : item.status === 'In Progress' ? '#F59E0B20' : '#06B6D420' },
+          ]}
+        >
+          <Feather
+            name="activity"
+            size={14}
+            color={item.status === 'Resolved' ? '#10B981' : item.status === 'In Progress' ? '#F59E0B' : CYAN.main}
+          />
+          <Text
+            style={[
+              styles.statusText,
+              { color: item.status === 'Resolved' ? '#10B981' : item.status === 'In Progress' ? '#F59E0B' : CYAN.main },
+            ]}
+          >
+            {item.status}
+          </Text>
+        </View>
+      </View>
 
-  // Show loading state
+      <Text style={styles.cardDescription}>{item.description}</Text>
+
+      <View style={styles.timelineContainer}>
+        <Text style={styles.timelineTitle}>Progress Timeline</Text>
+        {item.timeline?.map((step, index) => (
+          <View key={index} style={styles.timelineItem}>
+            <View style={styles.timelineLeft}>
+              <View
+                style={[
+                  styles.timelineDot,
+                  { backgroundColor: step.completed ? CYAN.main : '#E2E8F0' },
+                ]}
+              />
+              {index < item.timeline.length - 1 && (
+                <View
+                  style={[
+                    styles.timelineLine,
+                    { backgroundColor: step.completed ? CYAN.main : '#E2E8F0' },
+                  ]}
+                />
+              )}
+            </View>
+            <View style={styles.timelineRight}>
+              <Text style={styles.timelineStatus}>{step.status}</Text>
+              <Text style={styles.timelineDescription}>{step.description}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+
   if (isLoading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -284,328 +150,193 @@ export default function TrackGrievanceScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
-      
-      <View style={styles.background}>
-        <SafeAreaView style={styles.safeArea}>
-          {/* Header with Profile Button */}
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.headerTitle}>Track Grievances</Text>
-              <Text style={styles.headerSubtitle}>Monitor the progress of your submitted complaints</Text>
-            </View>
-            
-            {/* Profile Button - Top Right */}
-            <TouchableOpacity 
-              style={styles.profileButton}
-              onPress={() => router.push('/(tabs)/profile')}
-              activeOpacity={0.7}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
+      {/* Glass Header */}
+      <LinearGradient
+        colors={['rgba(6,182,212,0.25)', 'rgba(255,255,255,0.85)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.headerContainer}
+      >
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>Track Grievances</Text>
+            <Text style={styles.headerSubtitle}>Monitor your submitted complaints</Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => router.push('/(tabs)/profile')}
+            style={styles.profileButton}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[CYAN.main, CYAN.light]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.profileGradient}
             >
-              <LinearGradient
-                colors={['#6366F1', '#8B5CF6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.profileGradient}
-              >
-                <Text style={styles.profileInitials}>{user.avatar}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
+              <Feather name="user" size={20} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
 
-          {/* Stats Summary */}
-          <View style={styles.statsContainer}>
-            <StatsCard title="Total" count={stats.total} animationDelay={0} />
-            <StatsCard title="Resolved" count={stats.resolved} animationDelay={200} />
-            <StatsCard title="Pending" count={stats.pending} animationDelay={400} />
-          </View>
+      {/* Toast */}
+      <Animated.View
+        style={[
+          styles.toast,
+          { opacity: toastAnim, transform: [{ scale: toastAnim }] },
+        ]}
+      >
+        <Text style={styles.toastText}>Refreshing...</Text>
+      </Animated.View>
 
-          {/* Grievances List */}
-          {grievances.length > 0 ? (
-            <FlatList
-              data={grievances}
-              renderItem={renderItem}
-              keyExtractor={keyExtractor}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-              removeClippedSubviews={true}
-              initialNumToRender={5}
-              maxToRenderPerBatch={5}
-              windowSize={10}
-              getItemLayout={(data, index) => ({
-                length: 200, // Approximate item height
-                offset: 200 * index,
-                index,
-              })}
-            />
-          ) : (
-            <View style={styles.emptyState}>
-              <Feather name="clipboard" size={64} color="#94A3B8" />
-              <Text style={styles.emptyTitle}>No Grievances Found</Text>
-              <Text style={styles.emptyText}>You haven't submitted any grievances yet.</Text>
-              <Text style={styles.emptySubtext}>Start by submitting your first grievance in the Submit tab.</Text>
-            </View>
-          )}
-        </SafeAreaView>
+      {/* Stats */}
+      <View style={styles.statsContainer}>
+        {[
+          { label: 'Total', count: stats.total },
+          { label: 'Resolved', count: stats.resolved },
+          { label: 'Pending', count: stats.pending },
+        ].map((stat, index) => (
+          <View key={index} style={styles.statsCard}>
+            <Text style={styles.statsNumber}>{stat.count}</Text>
+            <Text style={styles.statsLabel}>{stat.label}</Text>
+          </View>
+        ))}
       </View>
-    </View>
+
+      {/* List */}
+      {grievances.length > 0 ? (
+        <FlatList
+          data={grievances}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 150 }}
+        />
+      ) : (
+        <View style={styles.emptyState}>
+          <Feather name="clipboard" size={64} color="#94A3B8" />
+          <Text style={styles.emptyTitle}>No Grievances Found</Text>
+          <Text style={styles.emptyText}>Submit a grievance to start tracking.</Text>
+        </View>
+      )}
+
+      
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  background: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  container: { flex: 1, backgroundColor: '#fff' },
+
+  headerContainer: {
+    paddingTop: 30,
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingBottom: 25,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6,182,212,0.15)',
+    shadowColor: CYAN.main,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  headerLeft: {
-    flex: 1,
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  headerTitle: { fontSize: 30, fontWeight: 'bold', color: '#0F172A' },
+  headerSubtitle: { fontSize: 15, color: '#64748B', marginTop: 4 },
+  profileButton: { width: 45, height: 45, borderRadius: 22.5, overflow: 'hidden' },
+  profileGradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+
+  toast: {
+    position: 'absolute',
+    top: 105,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(6,182,212,0.9)',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 20,
+    zIndex: 10,
   },
-  profileButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: '#6366F1',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  profileGradient: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileInitials: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1E293B',
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#64748B',
-  },
+  toastText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+
   statsContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 20,
-    gap: 15,
+    marginVertical: 16,
   },
   statsCard: {
     flex: 1,
-    backgroundColor: 'white',
-    padding: 20,
+    marginHorizontal: 6,
+    backgroundColor: '#fff',
     borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(6,182,212,0.4)',
+    paddingVertical: 18,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowColor: CYAN.main,
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
     elevation: 3,
   },
-  statsNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1E293B',
-    marginBottom: 4,
-  },
-  statsLabel: {
-    fontSize: 12,
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontWeight: '600',
-  },
-  listContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-  },
+  statsNumber: { fontSize: 22, fontWeight: 'bold', color: '#0F172A' },
+  statsLabel: { fontSize: 13, color: '#64748B', marginTop: 4, textTransform: 'uppercase' },
+
   trackCard: {
-    backgroundColor: 'white',
-    borderRadius: 20,
+    backgroundColor: '#fff',
+    borderRadius: 18,
     padding: 20,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
+    borderWidth: 1.2,
+    borderColor: 'rgba(6,182,212,0.3)',
+    shadowColor: CYAN.main,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
   },
-  cardHeader: {
-    marginBottom: 20,
-  },
-  cardTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1E293B',
-    flex: 1,
-    marginRight: 12,
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: '#64748B',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardTitle: { fontSize: 17, fontWeight: '700', color: '#1E293B', flex: 1, marginRight: 10 },
+  cardDescription: { fontSize: 14, color: '#64748B', marginTop: 8, lineHeight: 20 },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
     gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  statusText: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase' },
+
+  timelineContainer: { borderTopWidth: 1, borderTopColor: '#E2E8F0', marginTop: 14, paddingTop: 12 },
+  timelineTitle: { fontSize: 14, fontWeight: '600', color: '#1E293B', marginBottom: 8 },
+  timelineItem: { flexDirection: 'row', marginBottom: 12 },
+  timelineLeft: { alignItems: 'center', marginRight: 14 },
+  timelineDot: { width: 10, height: 10, borderRadius: 5 },
+  timelineLine: { width: 2, height: 38, marginTop: 2 },
+  timelineRight: { flex: 1 },
+  timelineStatus: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
+  timelineDescription: { fontSize: 13, color: '#64748B', lineHeight: 18 },
+
+  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
+  emptyTitle: { fontSize: 22, fontWeight: '700', color: '#1E293B', marginTop: 20 },
+  emptyText: { fontSize: 15, color: '#64748B', textAlign: 'center', marginTop: 6 },
+
+  refreshButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 25,
+    shadowColor: CYAN.main,
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  cardMeta: {
-    flexDirection: 'row',
+  refreshGradient: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
-    gap: 16,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  metaText: {
-    fontSize: 12,
-    color: '#64748B',
-    fontWeight: '500',
-  },
-  priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  priorityText: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  timelineContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: 16,
-  },
-  timelineTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 16,
-  },
-  timelineItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  timelineLeft: {
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  timelineDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  timelineLine: {
-    width: 2,
-    height: 40,
-    marginTop: 4,
-  },
-  timelineRight: {
-    flex: 1,
-  },
-  timelineHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  timelineStatus: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  timelineDateTime: {
-    fontSize: 12,
-    color: '#94A3B8',
-  },
-  timelineDescription: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  emptyState: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1E293B',
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#64748B',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#94A3B8',
-    textAlign: 'center',
   },
 });
