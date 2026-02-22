@@ -1,50 +1,55 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import {
+  Animated,
+  Dimensions,
+  Easing,
+  Image,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   View,
-  Image,
-  Dimensions,
-  Animated,
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function SplashScreen() {
   const router = useRouter();
-
-  const orbAnim = useRef(new Animated.Value(0)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
-  const dotAnim = useRef(new Animated.Value(0)).current;
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.7)).current;
+  const textOpacity = useRef(new Animated.Value(0)).current;
+  const blob1Scale = useRef(new Animated.Value(0.8)).current;
+  const blob2Scale = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
-    // Floating orbs
+    // Float animation
     Animated.loop(
       Animated.sequence([
-        Animated.timing(orbAnim, { toValue: 1, duration: 6000, useNativeDriver: true }),
-        Animated.timing(orbAnim, { toValue: 0, duration: 6000, useNativeDriver: true }),
+        Animated.timing(floatAnim, { toValue: 1, duration: 2000, useNativeDriver: true, easing: Easing.inOut(Easing.sin) }),
+        Animated.timing(floatAnim, { toValue: 0, duration: 2000, useNativeDriver: true, easing: Easing.inOut(Easing.sin) }),
       ])
     ).start();
 
-    // Logo glow
+    // Blob pulsing
     Animated.loop(
       Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 1, duration: 2000, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0, duration: 2000, useNativeDriver: true }),
+        Animated.timing(blob1Scale, { toValue: 1.05, duration: 3000, useNativeDriver: true }),
+        Animated.timing(blob1Scale, { toValue: 0.95, duration: 3000, useNativeDriver: true }),
+      ])
+    ).start();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(blob2Scale, { toValue: 1.08, duration: 3500, useNativeDriver: true }),
+        Animated.timing(blob2Scale, { toValue: 0.92, duration: 3500, useNativeDriver: true }),
       ])
     ).start();
 
-    // Dots animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(dotAnim, { toValue: 1, duration: 1500, useNativeDriver: true }),
-        Animated.timing(dotAnim, { toValue: 0, duration: 1500, useNativeDriver: true }),
-      ])
-    ).start();
+    // Logo entrance
+    Animated.spring(logoScale, { toValue: 1, useNativeDriver: true, tension: 60, friction: 7 }).start();
+
+    // Text fade
+    Animated.timing(textOpacity, { toValue: 1, duration: 1000, delay: 400, useNativeDriver: true }).start();
 
     // Navigate to welcome
     const timer = setTimeout(() => {
@@ -54,224 +59,161 @@ export default function SplashScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  const orb1Translate = orbAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 12],
-  });
-
-  const orb2Translate = orbAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -14],
-  });
+  const floatY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -14] });
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#E6F7FF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#E8F4FF" />
 
-      {/* Background Gradient */}
-      <LinearGradient
-        colors={['#DFF7FF', '#EBFAFF', '#F6FCFF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
+      {/* Background blob decorations */}
+      <Animated.View style={[styles.blob, styles.blob1, { transform: [{ scale: blob1Scale }] }]} />
+      <Animated.View style={[styles.blob, styles.blob2, { transform: [{ scale: blob2Scale }] }]} />
+      <Animated.View style={[styles.blob, styles.blob3, { transform: [{ scale: blob1Scale }] }]} />
+      <View style={[styles.blob, styles.blob4]} />
 
-      {/* Floating Orbs */}
-      <Animated.View
-        style={[
-          styles.orb,
-          {
-            backgroundColor: 'rgba(14,165,233,0.25)',
-            top: -width * 0.4,
-            right: -width * 0.3,
-            transform: [{ translateY: orb1Translate }],
-          },
-        ]}
-      />
-      <Animated.View
-        style={[
-          styles.orb,
-          {
-            backgroundColor: 'rgba(59,130,246,0.20)',
-            bottom: -width * 0.2,
-            left: -width * 0.25,
-            transform: [{ translateY: orb2Translate }],
-          },
-        ]}
-      />
+      {/* Main Content */}
+      <View style={styles.content}>
+        {/* Floating clay logo bubble */}
+        <Animated.View style={[{ transform: [{ translateY: floatY }, { scale: logoScale }] }]}>
+          <View style={styles.logoBubbleOuter}>
+            <View style={styles.logoBubbleOuterShadow} />
+            <View style={styles.logoBubble}>
+              <View style={styles.logoBubbleHighlight} />
+              <Image
+                source={require('../assets/icon.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
+        </Animated.View>
 
-      {/* Main Layout */}
-      <View style={styles.scrollContent}>
-        {/* Logo Section */}
-        <View style={styles.logoSection}>
-          <Animated.View
-            style={[
-              styles.logoWrapper,
-              {
-                shadowOpacity: glowAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.2, 0.45],
-                }),
-              },
-            ]}
-          >
-            <Image
-              source={require('../assets/icon.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </Animated.View>
+        <Animated.View style={{ opacity: textOpacity, alignItems: 'center' }}>
+          {/* Title clay chip */}
+          <View style={styles.titleChipWrap}>
+            <View style={styles.titleChipShadow} />
+            <View style={styles.titleChip}>
+              <View style={styles.titleChipHighlight} />
+              <Text style={styles.appName}>EcoYatra</Text>
+            </View>
+          </View>
 
-          <Text style={styles.appName}>GIET</Text>
-          <View style={styles.glowLine} />
-          <Text style={styles.appSubname}>GRIEVANCE</Text>
-        </View>
+          {/* Tagline chip */}
+          <View style={styles.taglineChipWrap}>
+            <View style={styles.taglineChipShadow} />
+            <View style={styles.taglineChip}>
+              <Text style={styles.tagline}>🌿 Sustainable Commute</Text>
+            </View>
+          </View>
+        </Animated.View>
 
-        {/* Loading Dots */}
-        <View style={styles.loadingContainer}>
-          <Animated.View
-            style={[
-              styles.dot,
-              {
-                opacity: dotAnim.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [1, 0.3, 1],
-                }),
-              },
-            ]}
-          />
-          <Animated.View
-            style={[
-              styles.dot,
-              {
-                opacity: dotAnim.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [0.3, 1, 0.3],
-                }),
-              },
-            ]}
-          />
-          <Animated.View
-            style={[
-              styles.dot,
-              {
-                opacity: dotAnim.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [0.3, 0.3, 1],
-                }),
-              },
-            ]}
-          />
-        </View>
-
-        {/* Footer Credit */}
-        <View style={styles.creditContainer}>
-          <Text style={styles.creditText}>
-            Designed & built with ❤️ by{' '}
-            <Text style={styles.teamName}>TEAM NEXUS</Text>
-          </Text>
-        </View>
+        {/* Loading dots */}
+        <Animated.View style={[styles.dotsRow, { opacity: textOpacity }]}>
+          {[0, 1, 2].map((i) => (
+            <View key={i} style={[styles.dot, { backgroundColor: i === 0 ? '#3DBF87' : i === 1 ? '#7BBFFF' : '#FF9EC8' }]} />
+          ))}
+        </Animated.View>
       </View>
+
+      {/* Footer */}
+      <Animated.View style={{ opacity: textOpacity, alignItems: 'center', marginBottom: 32 }}>
+        <View style={styles.footerChipWrap}>
+          <View style={styles.footerChipShadow} />
+          <View style={styles.footerChip}>
+            <Text style={styles.footerText}>💚 Made for a Greener Earth</Text>
+          </View>
+        </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
 
-/* --- Styles --- */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#EAF7FF' },
-
-  orb: {
-    position: 'absolute',
-    width: width * 1.2,
-    height: width * 1.2,
-    borderRadius: width * 0.6,
-    opacity: 0.45,
-  },
-
-  scrollContent: {
-    flexGrow: 1,
+  container: {
+    flex: 1,
+    backgroundColor: '#E8F4FF',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 40,
   },
 
-  /* Logo Section */
-  logoSection: {
-    alignItems: 'center',
+  // Blobs
+  blob: { position: 'absolute', borderRadius: 999, opacity: 0.5 },
+  blob1: { width: 300, height: 300, backgroundColor: '#C8EDDA', top: -80, left: -80 },
+  blob2: { width: 280, height: 280, backgroundColor: '#D4C8F5', bottom: -60, right: -60 },
+  blob3: { width: 200, height: 200, backgroundColor: '#FFD4E8', top: '45%', right: -60 },
+  blob4: { width: 160, height: 160, backgroundColor: '#FFE8A0', top: '30%', left: -50, opacity: 0.4 },
+
+  content: {
+    flex: 1,
     justifyContent: 'center',
-    marginTop: height * 0.1,
-  },
-  logoWrapper: {
-    width: 200,
-    height: 200,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(14,165,233,0.25)',
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#0EA5E9',
-    shadowRadius: 25,
-    elevation: 10,
-  },
-  logo: { width: 140, height: 140 },
-  appName: {
-    fontSize: 46,
-    fontWeight: '900',
-    color: '#0F172A',
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-    marginTop: 20,
-  },
-  glowLine: {
-    width: 80,
-    height: 3,
-    backgroundColor: '#0EA5E9',
-    marginVertical: 10,
-    borderRadius: 2,
-    shadowColor: '#0EA5E9',
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-  },
-  appSubname: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#0EA5E9',
-    letterSpacing: 6,
-    textTransform: 'uppercase',
+    gap: 28,
   },
 
-  /* Loading */
-  loadingContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: height * 0.1,
+  // Logo bubble
+  logoBubbleOuter: { position: 'relative' },
+  logoBubbleOuterShadow: {
+    position: 'absolute', top: 12, left: 12, right: -12, bottom: -12,
+    backgroundColor: '#A8D8FF', borderRadius: 80, opacity: 0.7,
   },
+  logoBubble: {
+    width: 160, height: 160, borderRadius: 80,
+    backgroundColor: '#FFF',
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#A8D8FF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.4, shadowRadius: 20,
+    elevation: 16, overflow: 'hidden',
+  },
+  logoBubbleHighlight: {
+    position: 'absolute', top: 0, left: 0, right: 0, height: 70,
+    backgroundColor: 'rgba(255,255,255,0.7)', borderTopLeftRadius: 80, borderTopRightRadius: 80,
+  },
+  logo: { width: 110, height: 110 },
+
+  // Title chip
+  titleChipWrap: { position: 'relative', marginBottom: 12 },
+  titleChipShadow: {
+    position: 'absolute', top: 6, left: 6, right: -6, bottom: -6,
+    backgroundColor: '#A8E6CF', borderRadius: 22, opacity: 0.7,
+  },
+  titleChip: {
+    backgroundColor: '#FFF', borderRadius: 22, paddingHorizontal: 30, paddingVertical: 14,
+    shadowColor: '#A8E6CF', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+    overflow: 'hidden',
+  },
+  titleChipHighlight: {
+    position: 'absolute', top: 0, left: 0, right: 0, height: 24,
+    backgroundColor: 'rgba(255,255,255,0.9)', borderTopLeftRadius: 22, borderTopRightRadius: 22,
+  },
+  appName: { fontSize: 38, fontWeight: '900', color: '#2D8A5F', letterSpacing: 2 },
+
+  // Tagline chip
+  taglineChipWrap: { position: 'relative' },
+  taglineChipShadow: {
+    position: 'absolute', top: 5, left: 5, right: -5, bottom: -5,
+    backgroundColor: '#6BCBA5', borderRadius: 18, opacity: 0.5,
+  },
+  taglineChip: {
+    backgroundColor: '#A8E6CF', borderRadius: 18, paddingHorizontal: 20, paddingVertical: 10,
+    shadowColor: '#6BCBA5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
+  },
+  tagline: { fontSize: 16, fontWeight: '800', color: '#1A6A45', textAlign: 'center' },
+
+  // Loading dots
+  dotsRow: { flexDirection: 'row', gap: 12, marginTop: 10 },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#0EA5E9',
-    shadowColor: '#0EA5E9',
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 5,
+    width: 14, height: 14, borderRadius: 7,
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 5,
   },
 
-  /* Footer */
-  creditContainer: {
-    marginTop: 50,
-    alignItems: 'center',
+  // Footer chip
+  footerChipWrap: { position: 'relative' },
+  footerChipShadow: {
+    position: 'absolute', top: 4, left: 4, right: -4, bottom: -4,
+    backgroundColor: '#B0DEFF', borderRadius: 18, opacity: 0.5,
   },
-  creditText: {
-    fontSize: 13,
-    color: '#64748B',
-    fontWeight: '500',
-    textAlign: 'center',
+  footerChip: {
+    backgroundColor: '#FFF', borderRadius: 18, paddingHorizontal: 18, paddingVertical: 10,
+    shadowColor: '#B0DEFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
   },
-  teamName: {
-    fontWeight: '700',
-    color: '#0EA5E9',
-    letterSpacing: 1,
-  },
+  footerText: { fontSize: 14, color: '#3DBF87', fontWeight: '800' },
 });

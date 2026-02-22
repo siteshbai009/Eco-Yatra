@@ -1,4 +1,4 @@
-import { supabase } from './lib/supabase';
+// import { supabase } from './app/lib/supabase';
 
 export interface GrievanceItem {
   id: string;
@@ -11,90 +11,78 @@ export interface GrievanceItem {
   timeline?: any[];
 }
 
-export const loadGrievances = async (): Promise<GrievanceItem[]> => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      console.log('No authenticated user found');
-      return [];
-    }
-
-    const { data, error } = await supabase
-      .from('grievances')
-      .select(`
-        *,
-        grievance_timeline (
-          status,
-          description,
-          completed,
-          created_at
-        )
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error loading grievances:', error);
-      return [];
-    }
-
-    return data.map(item => ({
-      id: item.id,
-      title: item.title,
-      category: item.category,
-      status: item.status,
-      priority: item.priority,
-      date: formatDate(item.created_at),
-      description: item.description,
-      timeline: item.grievance_timeline?.map((t: any) => ({
-        status: t.status,
-        date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        time: new Date(t.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-        description: t.description,
-        completed: t.completed
-      }))
-    }));
-  } catch (error) {
-    console.error('Error loading grievances:', error);
-    return [];
+const mockGrievances: GrievanceItem[] = [
+  {
+    id: '1',
+    title: 'Broken Chair',
+    category: 'Infrastructure',
+    status: 'Resolved',
+    priority: 'High',
+    date: '2023-10-20T10:00:00Z',
+    description: 'The chair in lab 3 is broken.',
+    timeline: [
+      { status: 'Submitted', date: 'Oct 20', time: '10:00 AM', description: 'Grievance submitted', completed: true },
+      { status: 'Resolved', date: 'Oct 22', time: '2:00 PM', description: 'Chair replaced', completed: true }
+    ]
+  },
+  {
+    id: '2',
+    title: 'Water Leakage',
+    category: 'Maintenance',
+    status: 'In Progress',
+    priority: 'Medium',
+    date: '2023-10-23T09:00:00Z',
+    description: 'Water is leaking from the ceiling in the corridor.',
+    timeline: [
+      { status: 'Submitted', date: 'Oct 23', time: '9:00 AM', description: 'Grievance submitted', completed: true },
+      { status: 'In Progress', date: 'Oct 23', time: '11:00 AM', description: 'Maintenance team notified', completed: true }
+    ]
+  },
+  {
+    id: '3',
+    title: 'Projector Not Working',
+    category: 'IT Support',
+    status: 'Submitted',
+    priority: 'High',
+    date: '2023-10-24T08:30:00Z',
+    description: 'The projector in room 101 is not displaying colors correctly.',
+    timeline: [
+      { status: 'Submitted', date: 'Oct 24', time: '8:30 AM', description: 'Grievance submitted', completed: true }
+    ]
   }
+];
+
+export const loadGrievances = async (): Promise<GrievanceItem[]> => {
+  // Mock implementation
+  console.log('Loading mock grievances');
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const formattedGrievances = mockGrievances.map(item => ({
+        ...item,
+        date: formatDate(item.date),
+        timeline: item.timeline // Keep timeline as is for mock
+      }));
+      resolve(formattedGrievances);
+    }, 500);
+  });
 };
 
 export const saveGrievance = async (newGrievance: Omit<GrievanceItem, 'id' | 'date' | 'timeline'>): Promise<void> => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      console.error('No authenticated user - cannot save grievance');
-      throw new Error('User not authenticated');
-    }
-
-    console.log('Saving grievance for user:', user.id);
-
-    const { error } = await supabase
-      .from('grievances')
-      .insert([{
-        user_id: user.id,
-        title: newGrievance.title,
-        category: newGrievance.category,
-        subcategory: (newGrievance as any).subcategory || null, // Add subcategory
-        description: newGrievance.description,
+  // Mock implementation
+  console.log('Saving mock grievance:', newGrievance);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const newItem: GrievanceItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        ...newGrievance,
+        date: new Date().toISOString(),
         status: 'Submitted',
-        priority: newGrievance.priority || 'Medium',
-        attachment_count: (newGrievance as any).attachmentCount || 0 // Add attachment count
-      }]);
-
-    if (error) {
-      console.error('Error saving grievance:', error);
-      throw error;
-    }
-
-    console.log('Grievance saved successfully');
-  } catch (error) {
-    console.error('Error saving grievance:', error);
-    throw error;
-  }
+        timeline: [{ status: 'Submitted', date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(), description: 'Grievance submitted', completed: true }]
+      };
+      mockGrievances.unshift(newItem); // Add to mock list
+      resolve();
+    }, 500);
+  });
 };
 
 
@@ -104,7 +92,7 @@ const formatDate = (dateString: string): string => {
   const diffTime = Math.abs(now.getTime() - date.getTime());
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-  
+
   if (diffDays === 0) {
     if (diffHours === 0) {
       return 'Just now';

@@ -1,0 +1,28 @@
+﻿app/(tabs)/history.tsx(124,20): error TS2322: Type '"leaf"' is not assignable to type '"user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | "radio" | "align-center" | "align-left" | ... 270 more ... | undefined'.
+app/(tabs)/leaderboard.tsx(170,22): error TS2322: Type '"leaf"' is not assignable to type '"user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | "radio" | "align-center" | "align-left" | ... 270 more ... | undefined'.
+app/(tabs)/leaderboard.tsx(284,30): error TS2322: Type '"leaf"' is not assignable to type '"user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | "radio" | "align-center" | "align-left" | ... 270 more ... | undefined'.
+app/(tabs)/tripDetails.tsx(253,38): error TS2322: Type '"leaf"' is not assignable to type '"user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | "radio" | "align-center" | "align-left" | ... 270 more ... | undefined'.
+app/ticketConfirmation.tsx(177,26): error TS2322: Type '"leaf"' is not assignable to type '"user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | "radio" | "align-center" | "align-left" | ... 270 more ... | undefined'.
+app/ticketConfirmation.tsx(278,22): error TS2322: Type '"leaf"' is not assignable to type '"user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | "radio" | "align-center" | "align-left" | ... 270 more ... | undefined'.
+app/ticketConfirmation.tsx(290,30): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+app/ticketConfirmation.tsx(317,38): error TS2345: Argument of type '"/(tabs)/index"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/AccountSettings" | `/AccountSettings?${string}` | `/AccountSettings#${string}` | "/HelpSupport" | `/HelpSupport?${string}` | `/HelpSupport#${string}` | "/" | ... 77 more ... | { ...; }'.
+constants/Colors.ts(25,5): error TS2783: 'text' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(26,5): error TS2783: 'background' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(27,5): error TS2783: 'tint' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(28,5): error TS2783: 'icon' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(32,5): error TS1117: An object literal cannot have multiple properties with the same name.
+constants/Colors.ts(33,5): error TS1117: An object literal cannot have multiple properties with the same name.
+constants/Colors.ts(36,5): error TS2783: 'text' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(37,5): error TS2783: 'background' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(38,5): error TS2783: 'tint' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(39,5): error TS2783: 'icon' is specified more than once, so this usage will be overwritten.
+constants/Colors.ts(43,5): error TS1117: An object literal cannot have multiple properties with the same name.
+constants/Colors.ts(44,5): error TS1117: An object literal cannot have multiple properties with the same name.
+temp_index_backup.tsx(19,25): error TS2307: Cannot find module '../../UserContext' or its corresponding type declarations.
+temp_index_backup.tsx(20,51): error TS2307: Cannot find module '../../dataStorage' or its corresponding type declarations.
+temp_index_backup.tsx(21,26): error TS2307: Cannot find module '../../lib/supabase' or its corresponding type declarations.
+temp_index_backup.tsx(287,14): error TS2322: Type '{ onPress: () => void; animationDelay: number; title: string; count: any; color: string; icon: string; key: string; }' is not assignable to type '{ title: string; count: number; color: string; icon: "user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | ... 272 more ... | "zap-off"; onPress: () => void; animationDelay: number; }'.
+  Types of property 'icon' are incompatible.
+    Type 'string' is not assignable to type '"user" | "search" | "repeat" | "anchor" | "bold" | "link" | "map" | "filter" | "code" | "menu" | "table" | "video" | "circle" | "image" | "radio" | "align-center" | "align-left" | ... 269 more ... | "zap-off"'.
+temp_index_backup.tsx(290,42): error TS2345: Argument of type '"/track"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/AccountSettings" | `/AccountSettings?${string}` | `/AccountSettings#${string}` | "/HelpSupport" | `/HelpSupport?${string}` | `/HelpSupport#${string}` | "/" | ... 77 more ... | { ...; }'.

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from './lib/supabase';
+// import { supabase } from './app/lib/supabase';
 
 interface User {
   name: string;
@@ -27,9 +27,9 @@ const defaultUser: User = {
 
 const UserContext = createContext<UserContextType>({
   user: defaultUser,
-  updateUser: () => {},
+  updateUser: () => { },
   greeting: 'Good Morning',
-  logout: async () => {}
+  logout: async () => { }
 });
 
 export const useUser = () => useContext(UserContext);
@@ -51,7 +51,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async (): Promise<void> => {
     try {
-      await supabase.auth.signOut();
+      // await supabase.auth.signOut();
       await AsyncStorage.removeItem('userProfile');
       await AsyncStorage.removeItem('isLoggedIn');
       setUser(defaultUser);
@@ -83,11 +83,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <UserContext.Provider value={{ 
-      user: userWithInitials, 
-      updateUser, 
-      greeting, 
-      logout 
+    <UserContext.Provider value={{
+      user: userWithInitials,
+      updateUser,
+      greeting,
+      logout
     }}>
       {children}
     </UserContext.Provider>
