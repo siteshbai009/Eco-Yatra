@@ -1,58 +1,62 @@
-# 🎓 Team Nexus — Grievance Redressal Portal
+# 🌿 EcoYatra — Sustainable Journey Companion
 
-> A complete grievance redressal and feedback management system built with React Native & Expo. Designed to simplify complaint submission, improve transparency, and streamline communication between students, faculty, and administrators.
-
----
-
-## 🧭 Overview
-The **Team Nexus Grievance Redressal Portal** is an institutional complaint management system that enables users to register, track, and resolve grievances efficiently. It ensures transparency, accountability, and quick resolution through a structured workflow.
+> **EcoYatra** is a modern, eco-conscious travel application designed to help users track their carbon footprint, plan sustainable commutes, and compete with others to save the planet. 
 
 ---
 
-## 🚀 Features
-
-- 🧾 **Easy Grievance Submission** – Users can file complaints with a simple form.
-- 🔔 **Live Status Tracking** – Real-time updates on the progress of each grievance.
-- 👥 **Multi-User Role System** – Separate panels for students, staff, and admin.
-- 📊 **Admin Dashboard** – View, assign, and resolve grievances efficiently.
-- 📨 **Notifications System** – Alerts users about status changes and updates.
-- 🛡️ **Secure Authentication** – User verification and data privacy ensured.
-- 🌐 **Cross-Platform Support** – Works seamlessly on Android, iOS, and Web.
+## 🫧 Design Aesthetic: Claymorphism
+**EcoYatra** features a custom-built **Claymorphism** UI. This design style provides a playful, "puffy," and tactile experience characterized by:
+- **Soft Pastel Palettes**: Mint greens, lavender, and sky blues.
+- **Inflated Geometries**: Puffy cards and buttons that appear to "pop" out of the screen.
+- **Layered Depth**: Inner highlights and colored drop shadows for a realistic 3D-sculpted look.
+- **Dynamic Micro-Animations**: Smooth, springy transitions powered by `react-native-reanimated`.
 
 ---
 
-## ⚙️ Tech Stack
+## 🚀 Key Features
+
+### 🗺️ Smart Trip Planning
+- Search for locations using a real-world map preview.
+- Compare different transport modes (Eco-rides, Walking, Cycling).
+- View estimated carbon savings before you even start.
+
+### 🍃 Carbon Impact Tracking
+- Real-time logging of your sustainable journeys.
+- Visual summaries of total CO₂ saved across all your trips.
+- Automatic calculation of environmental impact (e.g., equivalent trees planted).
+
+### 🏆 Social Leaderboard
+- Compete with other "Eco Legends."
+- Earn points for every sustainable ride.
+- Beautiful, clay-styled podium for the top contributors.
+
+### 📜 Digital Logbook
+- Maintain a complete history of your eco-friendly travel.
+- View detailed summaries for past bookings.
+- Share your impact certificates on social media.
+
+---
+
+## 🛠️ Tech Stack
 
 | Category | Technology |
 |-----------|-------------|
-| **Frontend** | React Native (Expo) |
-| **Backend (Optional)** | Firebase / Node.js + Express |
-| **Database** | Firebase Firestore / MongoDB |
-| **Version Control** | Git & GitHub |
-| **Design** | Figma / TailwindCSS |
+| **Core** | React Native (Expo SDK 54) |
+| **Navigation** | Expo Router |
+| **Animations** | React Native Reanimated |
+| **Icons** | Feather & Ionicons |
+| **Mapping** | React Native Maps (Google Maps) |
+| **Styling** | Vanilla StyleSheet with 3D Shadow Layers |
+| **Storage** | AsyncStorage |
 
 ---
 
-## 🧩 Folder Structure
-
-```
-grievance-redressal-portal/
- ┣ 📂 app/               # Screens and components
- ┣ 📂 assets/            # Images, icons, fonts
- ┣ 📂 components/        # Reusable UI components
- ┣ 📜 app.json           # App configuration
- ┣ 📜 package.json       # Dependencies & scripts
- ┣ 📜 README.md          # Project documentation
-```
-
----
-
-## 🛠️ Getting Started
+## ⚙️ Getting Started
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/TEAMNEXUS-giet/grievance-redressal-portal.git
-cd grievance-redressal-portal
+git clone https://github.com/siteshbai009/Eco-Yatra.git
+cd EcoYatra
 ```
 
 ### 2️⃣ Install dependencies
@@ -65,63 +69,26 @@ npm install
 npx expo start
 ```
 
-You can open the app in:
-- 📱 **Expo Go** – Scan QR to view on phone
-- 🤖 **Android Emulator**
-- 🍏 **iOS Simulator**
+Scan the QR code with **Expo Go** (Android) or use the **iOS Camera app** to view the app live!
 
 ---
 
-## 🧾 Usage Flow
-
-1. **User logs in / signs up** using institutional credentials.
-2. **Submits grievance** under a specific category.
-3. **Admin reviews** and assigns it to the concerned department.
-4. **Status updates** are shown on the user's dashboard.
-5. **User gets notified** when grievance is resolved.
-
----
-
-## 🧠 Project Goals
-
-- To simplify and digitalize the grievance redressal process.
-- To improve transparency between administration and students.
-- To ensure accountability through proper status tracking.
-- To reduce manual paperwork and delays.
-  
----
-
-## 💬 FAQs
-
-**Q1:** What is this portal for?  
-👉 It allows students and staff to submit and track grievances easily.
-
-**Q2:** Is my grievance confidential?  
-👉 Yes, all data is handled securely and visible only to authorized staff.
-
-**Q3:** Can I track my complaint status?  
-👉 Absolutely. Each user gets a personal dashboard for updates.
-
----
-
-## 🧰 Useful Commands
-
-| Command | Description |
-|----------|-------------|
-| `npm install` | Install all dependencies |
-| `npx expo start` | Start Expo server |
-| `npm run reset-project` | Reset to fresh Expo setup |
+## 🎨 UI Preview
+*The app uses a unique 3D bubble-like interface for all screens including:*
+- **Splash Screen**: Floating clay logos and pulsing aura blobs.
+- **Home Dashboard**: Trip planning with inner-shadow inputs.
+- **Confirmation**: Puffy ticket cards with "cut-line" details.
 
 ---
 
 ## 🤝 Contributing
-
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature-name`)
-3. Commit changes (`git commit -m 'Added new feature'`)
-4. Push to the branch (`git push origin feature-name`)
-5. Open a Pull Request 🎉
+2. Create a feature branch (`git checkout -b feature/NewFeature`)
+3. Commit changes (`git commit -m 'Add NewFeature'`)
+4. Push to the branch (`git push origin feature/NewFeature`)
+5. Open a Pull Request 🌿
 
 ---
 
-### 🪄 Made with 💙 by Team Nexus
+### 🪄 Created by [siteshbai09](https://github.com/siteshbai009)
+**Sustainable Travel for a Greener Tomorrow.** 🌎
