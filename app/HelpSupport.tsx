@@ -1,83 +1,142 @@
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { View, Text, SafeAreaView, StatusBar, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import {
+    Linking,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 export default function HelpSupport() {
+  const router = useRouter();
+  
+  const faqs = [
+    { q: 'What is EcoYatra?', a: 'A sustainable platform to track your carbon footprint and join eco-friendly commutes.' },
+    { q: 'Is my data private?', a: 'Strictly. Your info is only used to calculate impact and optional leaderboard rankings.' },
+    { q: 'How is CO2 saved calculated?', a: 'We compare your chosen eco-mode against standard car emissions for that distance.' },
+    { q: 'Can I join carpools?', a: 'Yes! Our smart routing helps you find or offer shared rides near you.' },
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>Help & Support</Text>
-        <Text style={styles.subTitle}>Frequently Asked Questions (FAQs)</Text>
+      <StatusBar barStyle="dark-content" backgroundColor="#E8F4FF" />
+      
+      {/* Background blobs */}
+      <View style={[styles.blob, styles.blob1]} />
+      <View style={[styles.blob, styles.blob2]} />
 
-        {/* General FAQs */}
-        <Text style={styles.sectionHeader}>General</Text>
-        <Text style={styles.itemTitle}>What is the Grievance Redressal Portal?</Text>
-        <Text style={styles.itemDesc}>It’s an online platform where students, faculty, and staff can raise issues, complaints, or feedback and get them resolved efficiently.</Text>
-
-        <Text style={styles.itemTitle}>Who can use this portal?</Text>
-        <Text style={styles.itemDesc}>The portal is open to all students, faculty, and staff members of the institution.</Text>
-
-        <Text style={styles.itemTitle}>Is my complaint confidential?</Text>
-        <Text style={styles.itemDesc}>Yes, all grievances are kept strictly confidential and accessible only to authorized officials.</Text>
-
-        <Text style={styles.itemTitle}>Can I submit a grievance anonymously?</Text>
-        <Text style={styles.itemDesc}>Yes, users can choose to submit grievances anonymously. However, anonymous complaints may take longer to verify.</Text>
-
-        <Text style={styles.itemTitle}>What types of grievances can I report?</Text>
-        <Text style={styles.itemDesc}>You can report issues related to academics, administration, infrastructure, staff behavior, harassment, or any other institutional concern.</Text>
-
-        {/* Process-Related FAQs */}
-        <Text style={styles.sectionHeader}>Process</Text>
-        <Text style={styles.itemTitle}>How do I submit a grievance?</Text>
-        <Text style={styles.itemDesc}>Log in to the portal, click “Submit Grievance,” fill in the details, and submit.</Text>
-
-        <Text style={styles.itemTitle}>Can I track the status of my grievance?</Text>
-        <Text style={styles.itemDesc}>Yes, once submitted, you can view your grievance status and updates on your dashboard.</Text>
-
-        <Text style={styles.itemTitle}>How long does it take to resolve a grievance?</Text>
-        <Text style={styles.itemDesc}>The time varies based on the type and severity of the issue, but every grievance is addressed as soon as possible.</Text>
-
-        <Text style={styles.itemTitle}>What happens after I submit my grievance?</Text>
-        <Text style={styles.itemDesc}>It is forwarded to the concerned authority or department for review and resolution. You’ll be notified when there’s an update.</Text>
-
-        <Text style={styles.itemTitle}>Can I edit or withdraw my grievance after submission?</Text>
-        <Text style={styles.itemDesc}>You can withdraw it if it hasn’t been processed yet. Editing depends on admin permissions.</Text>
-
-        {/* Technical FAQs */}
-        <Text style={styles.sectionHeader}>Technical</Text>
-        <Text style={styles.itemTitle}>I can’t log in or forgot my password — what should I do?</Text>
-        <Text style={styles.itemDesc}>Use the “Forgot Password” option or contact the portal admin for help.</Text>
-
-        <Text style={styles.itemTitle}>Why am I not receiving status updates?</Text>
-        <Text style={styles.itemDesc}>Ensure notifications are enabled and your email ID or phone number is correct in your profile.</Text>
-
-        <Text style={styles.itemTitle}>Which browsers or devices are supported?</Text>
-        <Text style={styles.itemDesc}>The portal works best on modern browsers like Chrome, Edge, and Safari on both desktop and mobile.</Text>
-
-        {/* Feedback & Support FAQs */}
-        <Text style={styles.sectionHeader}>Feedback & Support</Text>
-        <Text style={styles.itemTitle}>Can I give feedback or suggestions about the portal?</Text>
-        <Text style={styles.itemDesc}>Yes, you can share feedback using the “Feedback” option on the home page.</Text>
-
-        <Text style={styles.itemTitle}>Whom should I contact for help?</Text>
-        <Text style={styles.itemDesc}>
-          You can reach the support team via the “Contact Us” section or email the grievance cell directly.
-        </Text>
-        <TouchableOpacity onPress={() => Linking.openURL('mailto:support@email.com')}>
-          <Text style={styles.emailLink}>Email support@email.com</Text>
+      {/* Header */}
+      <View style={styles.headerArea}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <View style={styles.backBtnWrap}>
+            <View style={styles.backBtnShadow} />
+            <View style={styles.backBtn}>
+              <Feather name="arrow-left" size={24} color="#2D8A5F" />
+            </View>
+          </View>
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>Help Center</Text>
+        <View style={{ width: 44 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.heroWrap}>
+          <View style={styles.heroShadow} />
+          <View style={styles.hero}>
+            <View style={styles.heroHighlight} />
+            <Ionicons name="help-buoy" size={40} color="#3DBF87" />
+            <Text style={styles.heroTitle}>How can we help?</Text>
+            <Text style={styles.heroSub}>Find answers to common questions about your green journey.</Text>
+          </View>
+        </View>
+
+        <Text style={styles.sectionHeader}>📋 Frequently Asked Questions</Text>
+
+        {faqs.map((f, i) => (
+          <View key={i} style={styles.faqWrap}>
+            <View style={[styles.faqShadow, { backgroundColor: i % 2 === 0 ? '#B0DEFF' : '#D4C8F5' }]} />
+            <View style={styles.faqCard}>
+              <View style={styles.faqHighlight} />
+              <Text style={styles.faqQ}>{f.q}</Text>
+              <Text style={styles.faqA}>{f.a}</Text>
+            </View>
+          </View>
+        ))}
+
+        <Text style={styles.sectionHeader}>✉️ Still need help?</Text>
+
+        <View style={styles.contactWrap}>
+          <View style={styles.contactShadow} />
+          <View style={styles.contactCard}>
+            <View style={styles.contactHighlight} />
+            <Text style={styles.contactTitle}>Get in Touch</Text>
+            <Text style={styles.contactSub}>Our eco-support team is here for you 24/7.</Text>
+            
+            <TouchableOpacity 
+              style={styles.emailBtnWrap}
+              onPress={() => Linking.openURL('mailto:support@ecoyatra.com')}
+            >
+              <View style={styles.emailBtnShadow} />
+              <View style={styles.emailBtn}>
+                <View style={styles.emailBtnHighlight} />
+                <Feather name="mail" size={18} color="#FFF" />
+                <Text style={styles.emailBtnText}>Email Support</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  container: { padding: 20 },
-  header: { fontSize: 26, fontWeight: 'bold', color: '#1E293B', marginBottom: 8 },
-  subTitle: { fontSize: 16, color: '#6366F1', marginBottom: 16, fontWeight: 'bold' },
-  sectionHeader: { fontSize: 17, fontWeight: '700', color: '#6366F1', marginTop: 18, marginBottom: 10 },
-  itemTitle: { fontWeight: '600', fontSize: 15, color: '#1E293B', marginTop: 10 },
-  itemDesc: { color: '#64748B', fontSize: 14, marginTop: 2 },
-  emailLink: { color: '#10B981', fontSize: 14, marginTop: 2, marginBottom: 12, fontWeight: 'bold' },
+  safeArea: { flex: 1, backgroundColor: '#E8F4FF' },
+  blob: { position: 'absolute', borderRadius: 999, opacity: 0.4 },
+  blob1: { width: 300, height: 300, backgroundColor: '#FFE8A0', top: -150, right: -100 },
+  blob2: { width: 250, height: 250, backgroundColor: '#C8EDDA', bottom: 50, left: -100 },
+
+  headerArea: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, marginBottom: 10 },
+  backBtnWrap: { position: 'relative' },
+  backBtnShadow: { position: 'absolute', top: 4, left: 4, right: -4, bottom: -4, backgroundColor: '#A8E6CF', borderRadius: 16, opacity: 0.6 },
+  backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#2D4A30' },
+
+  container: { padding: 24, paddingTop: 10 },
+
+  heroWrap: { position: 'relative', marginBottom: 28 },
+  heroShadow: { position: 'absolute', top: 8, left: 8, right: -8, bottom: -8, backgroundColor: '#A8E6CF', borderRadius: 32, opacity: 0.5 },
+  hero: { backgroundColor: '#FFF', borderRadius: 32, padding: 24, alignItems: 'center', overflow: 'hidden' },
+  heroHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 60, backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 32, borderTopRightRadius: 32 },
+  heroTitle: { fontSize: 22, fontWeight: '900', color: '#2D4A30', marginTop: 12 },
+  heroSub: { fontSize: 13, color: '#6B9A80', textAlign: 'center', marginTop: 8, fontWeight: '700', lineHeight: 20 },
+
+  sectionHeader: { fontSize: 17, fontWeight: '900', color: '#2D4A30', marginBottom: 16, marginTop: 10 },
+
+  faqWrap: { position: 'relative', marginBottom: 18 },
+  faqShadow: { position: 'absolute', top: 6, left: 6, right: -6, bottom: -6, borderRadius: 24, opacity: 0.6 },
+  faqCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, overflow: 'hidden' },
+  faqHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 30, backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+  faqQ: { fontSize: 15, fontWeight: '900', color: '#2D4A30', marginBottom: 8 },
+  faqA: { fontSize: 14, color: '#6B9A80', fontWeight: '600', lineHeight: 20 },
+
+  contactWrap: { position: 'relative' },
+  contactShadow: { position: 'absolute', top: 8, left: 8, right: -8, bottom: -8, backgroundColor: '#FFE0CC', borderRadius: 32, opacity: 0.5 },
+  contactCard: { backgroundColor: '#FFF', borderRadius: 32, padding: 24, alignItems: 'center', overflow: 'hidden' },
+  contactHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 50, backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 32, borderTopRightRadius: 32 },
+  contactTitle: { fontSize: 18, fontWeight: '900', color: '#2D4A30' },
+  contactSub: { fontSize: 13, color: '#8AB8A0', textAlign: 'center', marginTop: 6, fontWeight: '700', marginBottom: 20 },
+
+  emailBtnWrap: { position: 'relative', width: '100%' },
+  emailBtnShadow: { position: 'absolute', top: 5, left: 5, right: -5, bottom: -5, backgroundColor: '#6BCBA5', borderRadius: 20, opacity: 0.6 },
+  emailBtn: { backgroundColor: '#3DBF87', paddingVertical: 18, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, overflow: 'hidden' },
+  emailBtnHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 26, backgroundColor: 'rgba(255,255,255,0.3)', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  emailBtnText: { color: '#FFF', fontSize: 16, fontWeight: '900' },
 });
