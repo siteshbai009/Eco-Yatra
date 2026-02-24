@@ -3,21 +3,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Dimensions,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-
-const { width } = Dimensions.get('window');
 
 interface UserData {
   name: string;
@@ -69,15 +67,15 @@ export default function HomeScreen() {
   const [loadingTo, setLoadingTo] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(40)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
   const fromSearchTimeout = useRef<any>(null);
   const toSearchTimeout = useRef<any>(null);
 
   useEffect(() => {
     fetchUserData();
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -157,51 +155,41 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.loaderWrap}>
-        <ActivityIndicator size="large" color="#3DBF87" />
+        <ActivityIndicator size="large" color="#16A34A" />
       </View>
     );
   }
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning ☀️' : hour < 17 ? 'Good Afternoon 🌤️' : 'Good Evening 🌙';
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
 
   const statItems = [
-    { icon: 'bicycle', value: userData?.total_rides, label: 'Rides', color: '#A8E6CF', shadow: '#6BCBA5', iconColor: '#2D8A5F' },
-    { icon: 'leaf', value: `${userData?.carbon_saved_kg?.toFixed(1)}`, label: 'kg CO₂', color: '#C8F5E0', shadow: '#90DFBA', iconColor: '#2D6A45' },
-    { icon: 'star', value: userData?.rating?.toFixed(1), label: 'Rating', color: '#FFE8A0', shadow: '#FFCC40', iconColor: '#B8860B' },
+    { icon: 'bicycle', value: userData?.total_rides, label: 'Rides' },
+    { icon: 'leaf', value: userData?.carbon_saved_kg?.toFixed(1), label: 'kg CO₂' },
+    { icon: 'star', value: userData?.rating?.toFixed(1), label: 'Rating' },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#E8F4FF" />
-
-      {/* Background blobs */}
-      <View style={[styles.blob, styles.blob1]} />
-      <View style={[styles.blob, styles.blob2]} />
-      <View style={[styles.blob, styles.blob3]} />
+      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* Header */}
       <Animated.View style={[{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-        <View style={styles.headerWrap}>
-          <View style={styles.headerShadow} />
-          <View style={styles.header}>
-            <View style={styles.headerHighlight} />
-            <View style={styles.headerContent}>
-              <View style={styles.headerLeft}>
-                <Text style={styles.greetingText}>{greeting}</Text>
-                <Text style={styles.userNameText}>{userName} 👋</Text>
-              </View>
-              <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
-                <View style={styles.profileBtnWrap}>
-                  <View style={styles.profileBtnShadow} />
-                  <View style={styles.profileBtn}>
-                    <View style={styles.profileBtnHighlight} />
-                    <Feather name="user" size={20} color="#FFF" />
-                  </View>
-                </View>
-              </TouchableOpacity>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Image 
+              source={require('../../assets/icon.png')} 
+              style={styles.headerLogo} 
+              resizeMode="contain"
+            />
+            <View>
+              <Text style={styles.greetingText}>{greeting}</Text>
+              <Text style={styles.userNameText}>{userName}</Text>
             </View>
           </View>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} activeOpacity={0.7} style={styles.profileBtn}>
+            <Feather name="user" size={20} color="#111827" />
+          </TouchableOpacity>
         </View>
       </Animated.View>
 
@@ -217,146 +205,120 @@ export default function HomeScreen() {
           {userData && (
             <View style={styles.statsRow}>
               {statItems.map((s, i) => (
-                <View key={i} style={styles.statCardWrap}>
-                  <View style={[styles.statCardShadow, { backgroundColor: s.shadow }]} />
-                  <View style={[styles.statCard, { backgroundColor: s.color }]}>
-                    <View style={styles.statCardHighlight} />
-                    <Ionicons name={s.icon as any} size={22} color={s.iconColor} />
-                    <Text style={styles.statNum}>{s.value}</Text>
-                    <Text style={styles.statLbl}>{s.label}</Text>
-                  </View>
+                <View key={i} style={styles.statCard}>
+                  <Ionicons name={s.icon as any} size={20} color="#16A34A" />
+                  <Text style={styles.statNum}>{s.value}</Text>
+                  <Text style={styles.statLbl}>{s.label}</Text>
                 </View>
               ))}
             </View>
           )}
 
           {/* Trip Planner Card */}
-          <View style={styles.cardWrap}>
-            <View style={styles.cardShadow} />
-            <View style={styles.card}>
-              <View style={styles.cardHighlight} />
-
-              <View style={styles.cardHeaderRow}>
-                <View style={styles.compassBubbleWrap}>
-                  <View style={styles.compassBubbleShadow} />
-                  <View style={styles.compassBubble}>
-                    <View style={styles.compassBubbleHighlight} />
-                    <Feather name="compass" size={22} color="#2D8A5F" />
-                  </View>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle}>🗺️ Plan a Journey</Text>
-                  <Text style={styles.cardSub}>Find your eco-friendly route</Text>
-                </View>
+          <View style={styles.card}>
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.compassBubble}>
+                <Feather name="compass" size={20} color="#16A34A" />
               </View>
-
-              {/* From Field */}
-              <Text style={styles.fieldLabel}>📍 Starting Point</Text>
-              <View style={styles.inputWrap}>
-                <View style={styles.inputShadow} />
-                <View style={styles.inputField}>
-                  <Feather name="map-pin" size={16} color="#3DBF87" />
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Where from?"
-                    placeholderTextColor="#B0C8B8"
-                    value={tripData.from}
-                    onChangeText={handleFromChange}
-                  />
-                  {loadingFrom && <ActivityIndicator size="small" color="#3DBF87" />}
-                </View>
-              </View>
-              {showFromSuggestions && fromSuggestions.length > 0 && (
-                <View style={styles.dropdown}>
-                  <ScrollView style={{ maxHeight: 180 }} keyboardShouldPersistTaps="handled">
-                    {fromSuggestions.map((item, index) => (
-                      <TouchableOpacity key={`from-${index}`} style={styles.dropdownItem} onPress={() => selectFromLocation(item)}>
-                        <Feather name="map-pin" size={13} color="#3DBF87" />
-                        <View style={{ flex: 1, marginLeft: 8 }}>
-                          <Text style={styles.dropdownName} numberOfLines={1}>{item.display_name.split(',')[0]}</Text>
-                          <Text style={styles.dropdownAddr} numberOfLines={1}>{item.display_name}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-              {/* Divider */}
-              <View style={styles.fieldDivider}>
-                <View style={styles.dividerLine} />
-                <View style={styles.dividerDot} />
-                <View style={styles.dividerLine} />
-              </View>
-
-              {/* To Field */}
-              <Text style={styles.fieldLabel}>🏁 Destination</Text>
-              <View style={styles.inputWrap}>
-                <View style={[styles.inputShadow, { backgroundColor: '#FFB0B8' }]} />
-                <View style={styles.inputField}>
-                  <Feather name="navigation" size={16} color="#FF7B8A" />
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Where to?"
-                    placeholderTextColor="#B0C8B8"
-                    value={tripData.to}
-                    onChangeText={handleToChange}
-                  />
-                  {loadingTo && <ActivityIndicator size="small" color="#FF7B8A" />}
-                </View>
-              </View>
-              {showToSuggestions && toSuggestions.length > 0 && (
-                <View style={styles.dropdown}>
-                  <ScrollView style={{ maxHeight: 180 }} keyboardShouldPersistTaps="handled">
-                    {toSuggestions.map((item, index) => (
-                      <TouchableOpacity key={`to-${index}`} style={styles.dropdownItem} onPress={() => selectToLocation(item)}>
-                        <Feather name="navigation" size={13} color="#FF7B8A" />
-                        <View style={{ flex: 1, marginLeft: 8 }}>
-                          <Text style={styles.dropdownName} numberOfLines={1}>{item.display_name.split(',')[0]}</Text>
-                          <Text style={styles.dropdownAddr} numberOfLines={1}>{item.display_name}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-              {/* Plan Button */}
-              <View style={styles.planBtnWrap}>
-                <View style={styles.planBtnShadow} />
-                <TouchableOpacity style={styles.planBtn} onPress={handlePlanTrip} activeOpacity={0.85}>
-                  <View style={styles.planBtnHighlight} />
-                  <Feather name="compass" size={18} color="#FFF" />
-                  <Text style={styles.planBtnText}>Begin Journey 🌿</Text>
-                </TouchableOpacity>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.cardTitle}>Plan a Journey</Text>
+                <Text style={styles.cardSub}>Find your eco-friendly route</Text>
               </View>
             </View>
+
+            {/* From Field */}
+            <View style={styles.inputField}>
+              <View style={styles.inputIconBox}>
+                <View style={styles.inputDot} />
+              </View>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Where from?"
+                placeholderTextColor="#9CA3AF"
+                value={tripData.from}
+                onChangeText={handleFromChange}
+              />
+              {loadingFrom && <ActivityIndicator size="small" color="#16A34A" style={styles.loader} />}
+            </View>
+            
+            {showFromSuggestions && fromSuggestions.length > 0 && (
+              <View style={styles.dropdown}>
+                <ScrollView style={{ maxHeight: 180 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                  {fromSuggestions.map((item, index) => (
+                    <TouchableOpacity key={`from-${index}`} style={styles.dropdownItem} onPress={() => selectFromLocation(item)}>
+                      <Feather name="map-pin" size={14} color="#6B7280" style={{marginTop: 2}} />
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={styles.dropdownName} numberOfLines={1}>{item.display_name.split(',')[0]}</Text>
+                        <Text style={styles.dropdownAddr} numberOfLines={1}>{item.display_name}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Divider Line connecting dots */}
+            <View style={styles.connectionLine} />
+
+            {/* To Field */}
+            <View style={styles.inputField}>
+              <View style={styles.inputIconBox}>
+                <View style={[styles.inputSquare]} />
+              </View>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Where to?"
+                placeholderTextColor="#9CA3AF"
+                value={tripData.to}
+                onChangeText={handleToChange}
+              />
+              {loadingTo && <ActivityIndicator size="small" color="#16A34A" style={styles.loader} />}
+            </View>
+            
+            {showToSuggestions && toSuggestions.length > 0 && (
+              <View style={styles.dropdown}>
+                <ScrollView style={{ maxHeight: 180 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                  {toSuggestions.map((item, index) => (
+                    <TouchableOpacity key={`to-${index}`} style={styles.dropdownItem} onPress={() => selectToLocation(item)}>
+                      <Feather name="navigation" size={14} color="#6B7280" style={{marginTop: 2}} />
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={styles.dropdownName} numberOfLines={1}>{item.display_name.split(',')[0]}</Text>
+                        <Text style={styles.dropdownAddr} numberOfLines={1}>{item.display_name}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Plan Button */}
+            <TouchableOpacity style={styles.planBtn} onPress={handlePlanTrip} activeOpacity={0.8}>
+              <Text style={styles.planBtnText}>Search Rides</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Quick Actions */}
-          <Text style={styles.sectionHeader}>⚡ Quick Actions</Text>
+          <Text style={styles.sectionHeader}>Quick Actions</Text>
           <View style={styles.quickGrid}>
             {[
-              { label: 'Leaderboard', route: '/(tabs)/leaderboard', emoji: '🏆', color: '#FFE8A0', shadow: '#FFCC40' },
-              { label: 'Past Rides', route: '/(tabs)/history', emoji: '📜', color: '#D4C8F5', shadow: '#A090E0' },
-              { label: 'Profile', route: '/(tabs)/profile', emoji: '👤', color: '#FFD4E8', shadow: '#FF9EC8' },
-              { label: 'Challenges', route: null, emoji: '🎯', color: '#A8E6CF', shadow: '#6BCBA5' },
+              { label: 'Leaderboard', route: '/(tabs)/leaderboard', icon: 'award' },
+              { label: 'Past Rides', route: '/(tabs)/history', icon: 'clock' },
+              { label: 'Profile', route: '/(tabs)/profile', icon: 'user' },
+              { label: 'Challenges', route: null, icon: 'target' },
             ].map((item, i) => (
               <TouchableOpacity
                 key={i}
-                style={styles.quickCardWrap}
-                activeOpacity={0.85}
+                style={styles.quickCard}
+                activeOpacity={0.7}
                 onPress={() => {
                   if (item.route) router.push(item.route as any);
                   else Alert.alert('Coming Soon', 'Challenges feature arriving soon!');
                 }}
               >
-                <View style={[styles.quickCardShadow, { backgroundColor: item.shadow }]} />
-                <View style={[styles.quickCard, { backgroundColor: item.color }]}>
-                  <View style={styles.quickCardHighlight} />
-                  <Text style={styles.quickEmoji}>{item.emoji}</Text>
-                  <Text style={styles.quickLabel}>{item.label}</Text>
+                <View style={styles.quickIconBox}>
+                  <Feather name={item.icon as any} size={20} color="#111827" />
                 </View>
+                <Text style={styles.quickLabel}>{item.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -369,169 +331,96 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F4FF' },
-  loaderWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8F4FF' },
-  blob: { position: 'absolute', borderRadius: 999, opacity: 0.45 },
-  blob1: { width: 280, height: 280, backgroundColor: '#C8EDDA', top: -60, left: -60 },
-  blob2: { width: 220, height: 220, backgroundColor: '#D4C8F5', top: 200, right: -60 },
-  blob3: { width: 180, height: 180, backgroundColor: '#FFE0CC', bottom: 100, left: -40 },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  loaderWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9FAFB' },
 
   // Header
-  headerWrap: { position: 'relative', margin: 16, marginBottom: 0 },
-  headerShadow: {
-    position: 'absolute', top: 8, left: 8, right: -8, bottom: -8,
-    backgroundColor: '#A8D8FF', borderRadius: 28, opacity: 0.5,
-  },
   header: {
-    backgroundColor: '#3DBF87', borderRadius: 28, overflow: 'hidden',
-    shadowColor: '#3DBF87', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12,
   },
-  headerHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 40,
-    backgroundColor: 'rgba(255,255,255,0.25)', borderTopLeftRadius: 28, borderTopRightRadius: 28,
-  },
-  headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
-  headerLeft: {},
-  greetingText: { fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.85)' },
-  userNameText: { fontSize: 22, fontWeight: '900', color: '#FFF' },
-
-  profileBtnWrap: { position: 'relative' },
-  profileBtnShadow: {
-    position: 'absolute', top: 5, left: 5, right: -5, bottom: -5,
-    backgroundColor: '#2D8A5F', borderRadius: 24, opacity: 0.6,
-  },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerLogo: { width: 44, height: 44, borderRadius: 12 },
+  greetingText: { fontSize: 13, fontWeight: '500', color: '#6B7280', marginBottom: 2 },
+  userNameText: { fontSize: 20, fontWeight: '700', color: '#111827' },
   profileBtn: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.25)',
-    justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
-  },
-  profileBtnHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 22,
-    backgroundColor: 'rgba(255,255,255,0.4)', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF',
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: '#E5E7EB',
   },
 
   scrollView: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 20 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24 },
 
   // Stats
-  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 20 },
-  statCardWrap: { flex: 1, position: 'relative' },
-  statCardShadow: {
-    position: 'absolute', top: 6, left: 6, right: -6, bottom: -6,
-    borderRadius: 22, opacity: 0.7,
-  },
+  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   statCard: {
-    borderRadius: 22, paddingVertical: 16, paddingHorizontal: 8,
-    alignItems: 'center', gap: 4, overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,
+    flex: 1, backgroundColor: '#FFFFFF', borderRadius: 16,
+    paddingVertical: 16, paddingHorizontal: 8, alignItems: 'center',
+    borderWidth: 1, borderColor: '#E5E7EB',
   },
-  statCardHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 28,
-    backgroundColor: 'rgba(255,255,255,0.6)', borderTopLeftRadius: 22, borderTopRightRadius: 22,
-  },
-  statNum: { fontSize: 20, fontWeight: '900', color: '#2D4A30', marginTop: 2 },
-  statLbl: { fontSize: 10, fontWeight: '700', color: '#5A7A60' },
+  statNum: { fontSize: 18, fontWeight: '700', color: '#111827', marginTop: 8 },
+  statLbl: { fontSize: 12, fontWeight: '500', color: '#6B7280', marginTop: 2 },
 
   // Card
-  cardWrap: { position: 'relative', marginBottom: 20 },
-  cardShadow: {
-    position: 'absolute', top: 8, left: 8, right: -8, bottom: -8,
-    backgroundColor: '#B0DEFF', borderRadius: 32, opacity: 0.5,
-  },
   card: {
-    backgroundColor: '#FFF', borderRadius: 32, padding: 20,
-    shadowColor: '#B0DEFF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16,
-    elevation: 8, overflow: 'hidden',
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20,
+    borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 28,
   },
-  cardHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 50,
-    backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 32, borderTopRightRadius: 32,
-  },
-  cardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-
-  compassBubbleWrap: { position: 'relative' },
-  compassBubbleShadow: {
-    position: 'absolute', top: 4, left: 4, right: -4, bottom: -4,
-    backgroundColor: '#6BCBA5', borderRadius: 20, opacity: 0.5,
-  },
+  cardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 20 },
   compassBubble: {
-    width: 50, height: 50, borderRadius: 20, backgroundColor: '#E0F8EE',
-    justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
+    width: 48, height: 48, borderRadius: 24, backgroundColor: '#ECFDF5',
+    justifyContent: 'center', alignItems: 'center',
   },
-  compassBubbleHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 22,
-    backgroundColor: 'rgba(255,255,255,0.7)', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-  },
-
-  cardTitle: { fontSize: 17, fontWeight: '900', color: '#2D4A30', marginBottom: 2 },
-  cardSub: { fontSize: 12, fontWeight: '600', color: '#6B9A80' },
-  fieldLabel: { fontSize: 12, fontWeight: '800', color: '#5A9A75', marginBottom: 8, marginTop: 4 },
+  cardTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  cardSub: { fontSize: 13, fontWeight: '500', color: '#6B7280' },
 
   // Input
-  inputWrap: { position: 'relative', marginBottom: 8 },
-  inputShadow: {
-    position: 'absolute', top: 5, left: 5, right: -5, bottom: -5,
-    backgroundColor: '#B0DEFF', borderRadius: 18, opacity: 0.5,
-  },
   inputField: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F0F9FF', borderRadius: 18,
-    paddingHorizontal: 14, paddingVertical: 13,
-    shadowColor: '#B0DEFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#F3F4F6', borderRadius: 14,
+    minHeight: 52, paddingHorizontal: 14,
   },
-  textInput: { flex: 1, marginLeft: 8, fontSize: 14, color: '#2D4A30', fontWeight: '600' },
+  inputIconBox: { width: 24, alignItems: 'center', justifyContent: 'center' },
+  inputDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#16A34A' },
+  inputSquare: { width: 8, height: 8, backgroundColor: '#111827' },
+  connectionLine: {
+    position: 'absolute', left: 45, top: 122, width: 2, height: 24,
+    backgroundColor: '#D1D5DB', zIndex: 10,
+  },
+  textInput: { flex: 1, fontSize: 15, color: '#111827', fontWeight: '500', paddingVertical: 14 },
+  loader: { marginLeft: 8 },
 
   // Dropdown
   dropdown: {
-    backgroundColor: '#FAFFFE', borderRadius: 18, marginBottom: 8, overflow: 'hidden',
-    shadowColor: '#A8E6CF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10,
-    elevation: 6, borderWidth: 2, borderColor: '#E0F5EA',
+    backgroundColor: '#FFFFFF', borderRadius: 14, marginTop: 6, marginBottom: 16,
+    borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
   },
-  dropdownItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#EEF8F2' },
-  dropdownName: { fontSize: 13, fontWeight: '800', color: '#2D4A30' },
-  dropdownAddr: { fontSize: 11, color: '#8AB8A0', marginTop: 1 },
+  dropdownItem: { flexDirection: 'row', alignItems: 'flex-start', padding: 14, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  dropdownName: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  dropdownAddr: { fontSize: 12, color: '#6B7280', marginTop: 2 },
 
-  // Field Divider
-  fieldDivider: { flexDirection: 'row', alignItems: 'center', marginVertical: 8 },
-  dividerLine: { flex: 1, height: 2, backgroundColor: '#E0F5EA', borderRadius: 1 },
-  dividerDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#3DBF87', marginHorizontal: 10 },
-
-  // Plan button
-  planBtnWrap: { position: 'relative', marginTop: 16 },
-  planBtnShadow: {
-    position: 'absolute', top: 6, left: 6, right: -6, bottom: -6,
-    backgroundColor: '#6BCBA5', borderRadius: 22, opacity: 0.6,
-  },
+  // Plan Button
   planBtn: {
-    backgroundColor: '#3DBF87', borderRadius: 22, paddingVertical: 17,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    overflow: 'hidden',
-    shadowColor: '#3DBF87', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+    backgroundColor: '#16A34A', borderRadius: 14, paddingVertical: 16,
+    alignItems: 'center', justifyContent: 'center', marginTop: 20,
   },
-  planBtnHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 28,
-    backgroundColor: 'rgba(255,255,255,0.35)', borderTopLeftRadius: 22, borderTopRightRadius: 22,
-  },
-  planBtnText: { fontSize: 17, fontWeight: '900', color: '#FFF', letterSpacing: 0.3 },
+  planBtnText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
 
-  // Section header
-  sectionHeader: { fontSize: 17, fontWeight: '900', color: '#2D4A30', marginBottom: 14, marginTop: 4 },
+  // Section Header
+  sectionHeader: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 16, paddingHorizontal: 4 },
 
-  // Quick cards
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  quickCardWrap: { width: (width - 44) / 2, position: 'relative' },
-  quickCardShadow: {
-    position: 'absolute', top: 8, left: 8, right: -8, bottom: -8,
-    borderRadius: 26, opacity: 0.7,
-  },
+  // Quick Cards
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingHorizontal: 4 },
   quickCard: {
-    borderRadius: 26, padding: 22, alignItems: 'center', overflow: 'hidden',
-    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 8,
+    width: '48%', backgroundColor: '#FFFFFF', borderRadius: 16,
+    padding: 16, alignItems: 'center', 
+    borderWidth: 1, borderColor: '#E5E7EB',
   },
-  quickCardHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 40,
-    backgroundColor: 'rgba(255,255,255,0.6)', borderTopLeftRadius: 26, borderTopRightRadius: 26,
+  quickIconBox: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3F4F6',
+    justifyContent: 'center', alignItems: 'center', marginBottom: 12,
   },
-  quickEmoji: { fontSize: 34, marginBottom: 8 },
-  quickLabel: { fontSize: 13, fontWeight: '800', color: '#2D4A30', textAlign: 'center' },
+  quickLabel: { fontSize: 14, fontWeight: '600', color: '#111827', textAlign: 'center' },
 });

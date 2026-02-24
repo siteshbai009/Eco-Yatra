@@ -36,12 +36,12 @@ export default function HistoryScreen() {
   ]);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
 
   React.useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 700, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -50,109 +50,69 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#E8F4FF" />
-
-      {/* Background blobs */}
-      <View style={[styles.blob, styles.blob1]} />
-      <View style={[styles.blob, styles.blob2]} />
+      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* Header */}
-      <View style={styles.headerWrap}>
-        <View style={styles.headerShadow} />
-        <View style={styles.header}>
-          <View style={styles.headerHighlight} />
-          <View style={styles.navContent}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <View style={styles.navBtnWrap}>
-                <View style={styles.navBtnShadow} />
-                <View style={styles.navBtn}>
-                  <Feather name="arrow-left" size={22} color="#2D8A5F" />
-                </View>
-              </View>
-            </TouchableOpacity>
-            <Text style={styles.navTitle}>📜 Trip Logbook</Text>
-            <View style={{ width: 44 }} />
-          </View>
-        </View>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+          <Feather name="arrow-left" size={24} color="#111827" />
+        </TouchableOpacity>
+        <Text style={styles.navTitle}>Trip Logbook</Text>
+        <View style={{ width: 44 }} />
       </View>
 
       <Animated.View style={[{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
           {/* Summary Banner */}
-          <View style={styles.summaryWrap}>
-            <View style={styles.summaryShadow} />
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryHighlight} />
-              <Text style={styles.summaryTitle}>✨ Journey Summary</Text>
-              <View style={styles.summaryStats}>
-                {[
-                  { icon: 'bicycle', value: trips.length.toString(), label: 'Trips', color: '#A8E6CF', shadow: '#6BCBA5', iconColor: '#2D8A5F' },
-                  { icon: 'leaf', value: `${totalCarbon}kg`, label: 'CO₂ Saved', color: '#C8F5E0', shadow: '#90DFBA', iconColor: '#2D6A45' },
-                  { icon: 'map', value: `${totalDist}km`, label: 'Distance', color: '#FFE8A0', shadow: '#FFCC40', iconColor: '#B8860B' },
-                ].map((s, i) => (
-                  <View key={i} style={styles.summaryItemWrap}>
-                    <View style={[styles.summaryItemShadow, { backgroundColor: s.shadow }]} />
-                    <View style={[styles.summaryItem, { backgroundColor: s.color }]}>
-                      <View style={styles.summaryItemHighlight} />
-                      <Ionicons name={s.icon as any} size={22} color={s.iconColor} />
-                      <Text style={styles.summaryNum}>{s.value}</Text>
-                      <Text style={styles.summaryLbl}>{s.label}</Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Journey Summary</Text>
+            <View style={styles.summaryStats}>
+              {[
+                { icon: 'bicycle', value: trips.length.toString(), label: 'Trips' },
+                { icon: 'leaf', value: `${totalCarbon}kg`, label: 'CO₂ Saved' },
+                { icon: 'map', value: `${totalDist}km`, label: 'Distance' },
+              ].map((s, i) => (
+                <View key={i} style={styles.summaryItem}>
+                  <Ionicons name={s.icon as any} size={22} color="#16A34A" />
+                  <Text style={styles.summaryNum}>{s.value}</Text>
+                  <Text style={styles.summaryLbl}>{s.label}</Text>
+                </View>
+              ))}
             </View>
           </View>
 
-          <Text style={styles.listHeader}>🚀 Recent Journeys</Text>
+          <Text style={styles.listHeader}>Recent Journeys</Text>
 
-          {trips.map((trip, i) => (
-            <View key={trip.id} style={styles.tripCardWrap}>
-              <View style={[styles.tripCardShadow, { backgroundColor: i % 2 === 0 ? '#B0DEFF' : '#D4C8F5' }]} />
-              <View style={[styles.tripCard, { backgroundColor: i % 2 === 0 ? '#F0FAFF' : '#F5F0FF' }]}>
-                <View style={styles.tripCardHighlight} />
-
-                {/* Timeline */}
-                <View style={styles.tripRow}>
-                  <View style={styles.timeline}>
-                    <View style={styles.dotGreen} />
-                    <View style={styles.timelineLine} />
-                    <View style={styles.dotRed} />
-                  </View>
-
-                  <View style={styles.routeInfo}>
-                    <Text style={styles.fromPlace}>{trip.from}</Text>
-                    <View style={styles.timeChip}>
-                      <Text style={styles.routeTime}>{trip.time}</Text>
-                    </View>
-                    <Text style={styles.toPlace}>{trip.to}</Text>
-                  </View>
-
-                  <View style={styles.tripMeta}>
-                    <View style={styles.datePill}>
-                      <Text style={styles.metaText}>{trip.date}</Text>
-                    </View>
-                    <Text style={styles.metaDist}>{trip.distance} km</Text>
-                  </View>
+          {trips.map((trip) => (
+            <View key={trip.id} style={styles.tripCard}>
+              <View style={styles.tripRow}>
+                <View style={styles.timeline}>
+                  <View style={styles.dotBlack} />
+                  <View style={styles.timelineLine} />
+                  <View style={styles.dotGreen} />
                 </View>
 
-                {/* Stats strip */}
-                <View style={styles.tripStatsRow}>
-                  <View style={styles.statChipWrap}>
-                    <View style={[styles.statChipShadow, { backgroundColor: '#6BCBA5' }]} />
-                    <View style={[styles.statChip, { backgroundColor: '#A8E6CF' }]}>
-                      <Ionicons name="leaf" size={12} color="#2D8A5F" />
-                      <Text style={styles.statChipText}>{trip.carbon} kg CO₂</Text>
-                    </View>
-                  </View>
-                  <View style={styles.statChipWrap}>
-                    <View style={[styles.statChipShadow, { backgroundColor: '#A090E0' }]} />
-                    <View style={[styles.statChip, { backgroundColor: '#D4C8F5' }]}>
-                      <Feather name="users" size={12} color="#6040C0" />
-                      <Text style={styles.statChipText}>{trip.passengers} passengers</Text>
-                    </View>
-                  </View>
+                <View style={styles.routeInfo}>
+                  <Text style={styles.fromPlace}>{trip.from}</Text>
+                  <Text style={styles.routeTime}>{trip.time}</Text>
+                  <Text style={styles.toPlace}>{trip.to}</Text>
+                </View>
+
+                <View style={styles.tripMeta}>
+                  <Text style={styles.metaText}>{trip.date}</Text>
+                  <Text style={styles.metaDist}>{trip.distance} km</Text>
+                </View>
+              </View>
+
+              <View style={styles.tripStatsRow}>
+                <View style={styles.statChip}>
+                  <Ionicons name="leaf" size={12} color="#16A34A" />
+                  <Text style={styles.statChipText}>{trip.carbon} kg CO₂</Text>
+                </View>
+                <View style={[styles.statChip, { marginLeft: 8 }]}>
+                  <Feather name="users" size={12} color="#16A34A" />
+                  <Text style={styles.statChipText}>{trip.passengers} pax</Text>
                 </View>
               </View>
             </View>
@@ -166,115 +126,54 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F4FF' },
-  blob: { position: 'absolute', borderRadius: 999, opacity: 0.4 },
-  blob1: { width: 260, height: 260, backgroundColor: '#C8EDDA', top: -60, right: -60 },
-  blob2: { width: 200, height: 200, backgroundColor: '#D4C8F5', bottom: 80, left: -50 },
-
-  // Header
-  headerWrap: { position: 'relative', margin: 16 },
-  headerShadow: {
-    position: 'absolute', top: 6, left: 6, right: -6, bottom: -6,
-    backgroundColor: '#A8D8FF', borderRadius: 24, opacity: 0.5,
-  },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
   header: {
-    backgroundColor: '#FFF', borderRadius: 24, overflow: 'hidden',
-    shadowColor: '#A8D8FF', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, backgroundColor: '#F9FAFB',
   },
-  headerHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 30,
-    backgroundColor: 'rgba(255,255,255,0.9)', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-  },
-  navContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },
-  navBtnWrap: { position: 'relative' },
-  navBtnShadow: {
-    position: 'absolute', top: 4, left: 4, right: -4, bottom: -4,
-    backgroundColor: '#A8E6CF', borderRadius: 16, opacity: 0.6,
-  },
-  navBtn: {
-    width: 44, height: 44, borderRadius: 16, backgroundColor: '#E8F8F2',
-    justifyContent: 'center', alignItems: 'center',
-  },
-  navTitle: { fontSize: 18, fontWeight: '900', color: '#2D4A30' },
+  backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'flex-start' },
+  navTitle: { fontSize: 18, fontWeight: '600', color: '#111827' },
 
-  scrollContent: { paddingHorizontal: 16, paddingTop: 8 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 12 },
 
   // Summary
-  summaryWrap: { position: 'relative', marginBottom: 20 },
-  summaryShadow: {
-    position: 'absolute', top: 8, left: 8, right: -8, bottom: -8,
-    backgroundColor: '#A8E6CF', borderRadius: 28, opacity: 0.5,
-  },
   summaryCard: {
-    backgroundColor: '#FFF', borderRadius: 28, padding: 20, overflow: 'hidden',
-    shadowColor: '#A8E6CF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8,
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20,
+    borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 28,
   },
-  summaryHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 50,
-    backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 28, borderTopRightRadius: 28,
-  },
-  summaryTitle: { fontSize: 15, fontWeight: '900', color: '#2D4A30', marginBottom: 16, textAlign: 'center' },
-  summaryStats: { flexDirection: 'row', justifyContent: 'space-around' },
-  summaryItemWrap: { position: 'relative' },
-  summaryItemShadow: {
-    position: 'absolute', top: 5, left: 5, right: -5, bottom: -5,
-    borderRadius: 20, opacity: 0.6,
-  },
-  summaryItem: {
-    width: (width - 80) / 3, borderRadius: 20, paddingVertical: 14,
-    alignItems: 'center', gap: 4, overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 5,
-  },
-  summaryItemHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 24,
-    backgroundColor: 'rgba(255,255,255,0.6)', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-  },
-  summaryNum: { fontSize: 18, fontWeight: '900', color: '#2D4A30' },
-  summaryLbl: { fontSize: 10, fontWeight: '700', color: '#5A7A60' },
+  summaryTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 16, textAlign: 'center' },
+  summaryStats: { flexDirection: 'row', justifyContent: 'space-between' },
+  summaryItem: { flex: 1, alignItems: 'center' },
+  summaryNum: { fontSize: 18, fontWeight: '700', color: '#111827', marginTop: 8 },
+  summaryLbl: { fontSize: 13, fontWeight: '500', color: '#6B7280', marginTop: 2 },
 
-  listHeader: { fontSize: 17, fontWeight: '900', color: '#2D4A30', marginBottom: 14 },
+  listHeader: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 16, paddingHorizontal: 4 },
 
   // Trip cards
-  tripCardWrap: { position: 'relative', marginBottom: 16 },
-  tripCardShadow: {
-    position: 'absolute', top: 8, left: 8, right: -8, bottom: -8,
-    borderRadius: 26, opacity: 0.6,
-  },
   tripCard: {
-    borderRadius: 26, padding: 18, overflow: 'hidden',
-    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, marginBottom: 16,
+    borderWidth: 1, borderColor: '#E5E7EB',
   },
-  tripCardHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 40,
-    backgroundColor: 'rgba(255,255,255,0.7)', borderTopLeftRadius: 26, borderTopRightRadius: 26,
-  },
-
-  tripRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  tripRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   timeline: { alignItems: 'center', width: 20, marginRight: 14 },
-  dotGreen: { width: 13, height: 13, borderRadius: 7, backgroundColor: '#3DBF87', borderWidth: 2, borderColor: '#FFF' },
-  timelineLine: { width: 3, height: 26, backgroundColor: '#B0E0C8', marginVertical: 4, borderRadius: 2 },
-  dotRed: { width: 13, height: 13, borderRadius: 7, backgroundColor: '#FF7B8A', borderWidth: 2, borderColor: '#FFF' },
+  dotBlack: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#111827', borderWidth: 2, borderColor: '#FFFFFF' },
+  timelineLine: { width: 2, height: 26, backgroundColor: '#E5E7EB', marginVertical: 4 },
+  dotGreen: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#16A34A', borderWidth: 2, borderColor: '#FFFFFF' },
+  
   routeInfo: { flex: 1 },
-  fromPlace: { fontSize: 14, fontWeight: '900', color: '#2D4A30', marginBottom: 4 },
-  toPlace: { fontSize: 14, fontWeight: '900', color: '#2D4A30', marginTop: 4 },
-  timeChip: { backgroundColor: 'rgba(255,255,255,0.8)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, alignSelf: 'flex-start' },
-  routeTime: { fontSize: 11, color: '#6B9A80', fontWeight: '700' },
+  fromPlace: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  toPlace: { fontSize: 15, fontWeight: '700', color: '#111827', marginTop: 2 },
+  routeTime: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
 
-  tripMeta: { alignItems: 'flex-end', gap: 6 },
-  datePill: { backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5 },
-  metaText: { fontSize: 11, fontWeight: '800', color: '#5A7A60' },
-  metaDist: { fontSize: 15, fontWeight: '900', color: '#3DBF87' },
+  tripMeta: { alignItems: 'flex-end', justifyContent: 'center' },
+  metaText: { fontSize: 12, fontWeight: '500', color: '#6B7280', marginBottom: 2 },
+  metaDist: { fontSize: 16, fontWeight: '700', color: '#111827' },
 
   // Stats strip
-  tripStatsRow: { flexDirection: 'row', gap: 10 },
-  statChipWrap: { flex: 1, position: 'relative' },
-  statChipShadow: {
-    position: 'absolute', top: 4, left: 4, right: -4, bottom: -4,
-    borderRadius: 14, opacity: 0.6,
-  },
+  tripStatsRow: { flexDirection: 'row', paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   statChip: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 14, overflow: 'hidden',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 6, paddingHorizontal: 12, borderRadius: 12, backgroundColor: '#ECFDF5',
   },
-  statChipText: { fontSize: 12, fontWeight: '800', color: '#2D4A30' },
+  statChipText: { fontSize: 13, fontWeight: '600', color: '#16A34A' },
 });

@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+    ActivityIndicator,
     Animated,
     Dimensions,
     Easing,
@@ -13,7 +14,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -29,15 +30,15 @@ export default function SignupScreen() {
   const [toast, setToast] = useState({ visible: false, message: '', type: 'error' });
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
   const toastAnim = useRef(new Animated.Value(0)).current;
 
   const router = useRouter();
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 700, easing: Easing.out(Easing.back(1.2)), useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -91,92 +92,65 @@ export default function SignupScreen() {
     { icon: 'lock', label: 'Confirm Password', placeholder: 'Re-enter password', value: confirmPassword, setter: setConfirmPassword, keyboard: 'default' as any, secure: true },
   ];
 
-  const fieldColors = ['#A8E6CF', '#B8D4FF', '#FFD4E8', '#D4C8F5', '#FFE8A0'];
-  const fieldShadows = ['#6BCBA5', '#80AAFF', '#FF9EC8', '#A090E0', '#FFCC40'];
-
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#E8F4FF" />
-
-      {/* Background blobs */}
-      <View style={[styles.blob, styles.blob1]} />
-      <View style={[styles.blob, styles.blob2]} />
-      <View style={[styles.blob, styles.blob3]} />
+      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header chip */}
+        {/* Header */}
         <Animated.View style={[{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }, styles.headerArea]}>
-          <View style={styles.headerChipWrap}>
-            <View style={styles.headerChipShadow} />
-            <View style={styles.headerChip}>
-              <View style={styles.headerChipHighlight} />
-              <Text style={styles.headerTitle}>Create Account 🌿</Text>
-            </View>
-          </View>
-          <Text style={styles.headerSub}>Join EcoYatra and start your sustainable journey</Text>
+          <Text style={styles.headerTitle}>Create Account</Text>
+          <Text style={styles.headerSub}>Join EcoYatra for your sustainable journey</Text>
         </Animated.View>
 
         {/* Form Card */}
-        <Animated.View style={[{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.cardWrap}>
-            <View style={styles.cardShadow} />
-            <View style={styles.card}>
-              <View style={styles.cardHighlight} />
-
-              {fields.map((f, i) => (
-                <View key={i}>
-                  <Text style={styles.fieldLabel}>{f.label}</Text>
-                  <View style={styles.inputWrap}>
-                    <View style={[styles.inputShadow, { backgroundColor: fieldShadows[i] }]} />
-                    <View style={[styles.inputField, { backgroundColor: fieldColors[i] + '40' }]}>
-                      <Feather name={f.icon as any} size={18} color="#3DBF87" />
-                      <TextInput
-                        style={styles.textInput}
-                        placeholder={f.placeholder}
-                        placeholderTextColor="#B0C8B8"
-                        keyboardType={f.keyboard}
-                        secureTextEntry={f.secure && !showPassword}
-                        value={f.value}
-                        onChangeText={f.setter}
-                        editable={!loading}
-                        maxLength={f.icon === 'phone' ? 13 : undefined}
-                      />
-                      {f.secure && (
-                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                          <Feather name={showPassword ? 'eye' : 'eye-off'} size={16} color="#8AB8A0" />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
+        <Animated.View style={[{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], width: '100%' }]}>
+          <View style={styles.card}>
+            {fields.map((f, i) => (
+              <View key={i}>
+                <Text style={styles.fieldLabel}>{f.label}</Text>
+                <View style={styles.inputField}>
+                  <Feather name={f.icon as any} size={18} color="#9CA3AF" />
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder={f.placeholder}
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType={f.keyboard}
+                    secureTextEntry={f.secure && !showPassword}
+                    value={f.value}
+                    onChangeText={f.setter}
+                    editable={!loading}
+                    maxLength={f.icon === 'phone' ? 13 : undefined}
+                  />
+                  {f.secure && (
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Feather name={showPassword ? 'eye' : 'eye-off'} size={18} color="#6B7280" />
+                    </TouchableOpacity>
+                  )}
                 </View>
-              ))}
-
-              {/* Sign Up Button */}
-              <View style={styles.btnWrap}>
-                <View style={styles.btnShadow} />
-                <TouchableOpacity style={[styles.signupBtn, loading && { opacity: 0.7 }]} onPress={handleSignup} disabled={loading} activeOpacity={0.85}>
-                  <View style={styles.btnHighlight} />
-                  <Text style={styles.signupBtnText}>{loading ? 'Creating Account...' : 'Sign Up 🚀'}</Text>
-                </TouchableOpacity>
               </View>
+            ))}
 
-              {/* Sign In Link */}
-              <View style={styles.signInRow}>
-                <Text style={styles.signInText}>Already have an account? </Text>
-                <TouchableOpacity onPress={() => router.push('/login')}>
-                  <Text style={styles.signInLink}>Sign In →</Text>
-                </TouchableOpacity>
-              </View>
+            {/* Sign Up Button */}
+            <TouchableOpacity style={[styles.signupBtn]} onPress={handleSignup} disabled={loading} activeOpacity={0.8}>
+              {loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.signupBtnText}>Sign Up</Text>}
+            </TouchableOpacity>
+
+            {/* Sign In Link */}
+            <View style={styles.signInRow}>
+              <Text style={styles.signInText}>Already have an account? </Text>
+              <TouchableOpacity onPress={() => router.push('/login')}>
+                <Text style={styles.signInLink}>Sign In</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Animated.View>
 
-        <Animated.Text style={[styles.footer, { opacity: fadeAnim }]}>💚 Made for sustainable travel</Animated.Text>
       </ScrollView>
 
       {toast.visible && (
-        <Animated.View style={[styles.toast, { opacity: toastAnim, backgroundColor: toast.type === 'success' ? '#3DBF87' : '#FF7B8A' }]}>
-          <Feather name={toast.type === 'success' ? 'check-circle' : 'alert-circle'} size={16} color="#FFF" style={{ marginRight: 8 }} />
+        <Animated.View style={[styles.toast, { opacity: toastAnim, backgroundColor: toast.type === 'success' ? '#16A34A' : '#EF4444' }]}>
+          <Feather name={toast.type === 'success' ? 'check-circle' : 'alert-circle'} size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
           <Text style={styles.toastText}>{toast.message}</Text>
         </Animated.View>
       )}
@@ -185,92 +159,45 @@ export default function SignupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E8F4FF' },
-  blob: { position: 'absolute', borderRadius: 999, opacity: 0.45 },
-  blob1: { width: 250, height: 250, backgroundColor: '#C8EDDA', top: -60, left: -60 },
-  blob2: { width: 200, height: 200, backgroundColor: '#D4C8F5', bottom: 60, right: -50 },
-  blob3: { width: 180, height: 180, backgroundColor: '#FFD4E8', top: '35%', right: -40 },
-
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
   scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 40, paddingBottom: 60, alignItems: 'center' },
 
   // Header
   headerArea: { alignItems: 'center', marginBottom: 24, width: '100%' },
-  headerChipWrap: { position: 'relative', alignSelf: 'center', marginBottom: 10 },
-  headerChipShadow: {
-    position: 'absolute', top: 6, left: 6, right: -6, bottom: -6,
-    backgroundColor: '#6BCBA5', borderRadius: 22, opacity: 0.6,
-  },
-  headerChip: {
-    backgroundColor: '#3DBF87', borderRadius: 22, paddingHorizontal: 28, paddingVertical: 14,
-    overflow: 'hidden', shadowColor: '#3DBF87', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
-  },
-  headerChipHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 26,
-    backgroundColor: 'rgba(255,255,255,0.35)', borderTopLeftRadius: 22, borderTopRightRadius: 22,
-  },
-  headerTitle: { fontSize: 22, fontWeight: '900', color: '#FFF' },
-  headerSub: { fontSize: 14, fontWeight: '700', color: '#6B9A80', textAlign: 'center' },
+  headerTitle: { fontSize: 28, fontWeight: '700', color: '#111827', marginBottom: 8 },
+  headerSub: { fontSize: 15, fontWeight: '500', color: '#6B7280', textAlign: 'center' },
 
   // Card
-  cardWrap: { width: '100%', position: 'relative', marginBottom: 20 },
-  cardShadow: {
-    position: 'absolute', top: 10, left: 10, right: -10, bottom: -10,
-    backgroundColor: '#A8D8FF', borderRadius: 32, opacity: 0.4,
-  },
   card: {
-    backgroundColor: '#FFF', borderRadius: 32, padding: 24,
-    shadowColor: '#A8D8FF', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20,
-    elevation: 10, overflow: 'hidden',
-  },
-  cardHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 60,
-    backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, width: '100%',
+    borderWidth: 1, borderColor: '#E5E7EB',
   },
 
-  fieldLabel: { fontSize: 12, fontWeight: '800', color: '#5A9A75', marginBottom: 8, marginTop: 4 },
+  fieldLabel: { fontSize: 13, fontWeight: '600', color: '#4B5563', marginBottom: 8, marginTop: 4 },
 
   // Input
-  inputWrap: { position: 'relative', marginBottom: 14 },
-  inputShadow: {
-    position: 'absolute', top: 5, left: 5, right: -5, bottom: -5,
-    borderRadius: 18, opacity: 0.4,
-  },
   inputField: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F0F9FF', borderRadius: 18,
-    paddingHorizontal: 14, paddingVertical: 13,
-    shadowColor: '#B0DEFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 3,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB',
+    borderRadius: 14, minHeight: 52, paddingHorizontal: 16, marginBottom: 16,
+    borderWidth: 1, borderColor: '#E5E7EB',
   },
-  textInput: { flex: 1, marginLeft: 10, fontSize: 14, color: '#2D4A30', fontWeight: '600' },
+  textInput: { flex: 1, marginLeft: 12, fontSize: 15, color: '#111827' },
 
-  // Sign Up button
-  btnWrap: { position: 'relative', marginTop: 8 },
-  btnShadow: {
-    position: 'absolute', top: 6, left: 6, right: -6, bottom: -6,
-    backgroundColor: '#6BCBA5', borderRadius: 22, opacity: 0.6,
-  },
+  // Sign Up btn
   signupBtn: {
-    backgroundColor: '#3DBF87', borderRadius: 22, paddingVertical: 18,
-    alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-    shadowColor: '#3DBF87', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+    backgroundColor: '#16A34A', borderRadius: 14, paddingVertical: 16,
+    alignItems: 'center', justifyContent: 'center', marginTop: 16,
   },
-  btnHighlight: {
-    position: 'absolute', top: 0, left: 0, right: 0, height: 28,
-    backgroundColor: 'rgba(255,255,255,0.35)', borderTopLeftRadius: 22, borderTopRightRadius: 22,
-  },
-  signupBtnText: { fontSize: 18, fontWeight: '900', color: '#FFF', letterSpacing: 0.5 },
+  signupBtnText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
 
-  signInRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 20, paddingTop: 16, borderTopWidth: 2, borderTopColor: '#F0FAFF' },
-  signInText: { fontSize: 14, color: '#8AB8A0', fontWeight: '600' },
-  signInLink: { fontSize: 14, color: '#3DBF87', fontWeight: '900' },
-
-  footer: { fontSize: 13, color: '#8AB8A0', fontWeight: '600', textAlign: 'center' },
+  signInRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
+  signInText: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
+  signInLink: { fontSize: 14, color: '#16A34A', fontWeight: '600' },
 
   toast: {
-    position: 'absolute', bottom: 100, left: 30, right: 30,
-    borderRadius: 20, paddingVertical: 14, paddingHorizontal: 18,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
+    position: 'absolute', bottom: 40, left: 30, right: 30,
+    borderRadius: 12, paddingVertical: 14, paddingHorizontal: 16,
+    flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4,
   },
-  toastText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
+  toastText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
 });

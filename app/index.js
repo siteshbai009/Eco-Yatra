@@ -19,13 +19,13 @@ export default function Index() {
         console.log('User is logged in, redirecting to tabs');
         setRoute('/(tabs)');
       } else {
-        // User is not logged in, show splash screen
-        console.log('User is not logged in, showing splash screen');
-        setRoute('/splashscreen');
+        // User is not logged in, show welcome screen
+        console.log('User is not logged in, redirecting to welcome');
+        setRoute('/welcome');
       }
     } catch (error) {
       console.error('Error checking login status:', error);
-      setRoute('/splashscreen');
+      setRoute('/welcome');
     }
   };
 

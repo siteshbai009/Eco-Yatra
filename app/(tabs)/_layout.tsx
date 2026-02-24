@@ -9,11 +9,11 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: '#3DBF87',
-        tabBarInactiveTintColor: '#B0C8B8',
+        tabBarActiveTintColor: '#16A34A',
+        tabBarInactiveTintColor: '#9CA3AF',
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarBackground: () => (
-          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#F0FAFF' }]} />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#FFFFFF' }]} />
         ),
       }}
     >
@@ -69,15 +69,13 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    borderTopWidth: 0,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
     height: 74,
     paddingBottom: 10,
     paddingTop: 8,
-    elevation: 20,
-    shadowColor: '#A8D8FF',
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
+    elevation: 0,
+    shadowColor: 'transparent',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
   },
@@ -89,12 +87,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   iconWrapActive: {
-    backgroundColor: 'rgba(61, 191, 135, 0.15)',
-    shadowColor: '#3DBF87',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#F0FDF4',
   },
   tabBarLabel: {
     fontSize: 10,

@@ -24,7 +24,7 @@ export default function HelpSupport() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#E8F4FF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
       {/* Background blobs */}
       <View style={[styles.blob, styles.blob1]} />
@@ -36,7 +36,7 @@ export default function HelpSupport() {
           <View style={styles.backBtnWrap}>
             <View style={styles.backBtnShadow} />
             <View style={styles.backBtn}>
-              <Feather name="arrow-left" size={24} color="#2D8A5F" />
+              <Feather name="arrow-left" size={24} color="#22C55E" />
             </View>
           </View>
         </TouchableOpacity>
@@ -49,7 +49,7 @@ export default function HelpSupport() {
           <View style={styles.heroShadow} />
           <View style={styles.hero}>
             <View style={styles.heroHighlight} />
-            <Ionicons name="help-buoy" size={40} color="#3DBF87" />
+            <Ionicons name="help-buoy" size={40} color="#22C55E" />
             <Text style={styles.heroTitle}>How can we help?</Text>
             <Text style={styles.heroSub}>Find answers to common questions about your green journey.</Text>
           </View>
@@ -59,7 +59,7 @@ export default function HelpSupport() {
 
         {faqs.map((f, i) => (
           <View key={i} style={styles.faqWrap}>
-            <View style={[styles.faqShadow, { backgroundColor: i % 2 === 0 ? '#B0DEFF' : '#D4C8F5' }]} />
+            <View style={[styles.faqShadow, { backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FFFFFF' }]} />
             <View style={styles.faqCard}>
               <View style={styles.faqHighlight} />
               <Text style={styles.faqQ}>{f.q}</Text>
@@ -84,7 +84,7 @@ export default function HelpSupport() {
               <View style={styles.emailBtnShadow} />
               <View style={styles.emailBtn}>
                 <View style={styles.emailBtnHighlight} />
-                <Feather name="mail" size={18} color="#FFF" />
+                <Feather name="mail" size={18} color="#FFFFFF" />
                 <Text style={styles.emailBtnText}>Email Support</Text>
               </View>
             </TouchableOpacity>
@@ -98,45 +98,45 @@ export default function HelpSupport() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#E8F4FF' },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
   blob: { position: 'absolute', borderRadius: 999, opacity: 0.4 },
-  blob1: { width: 300, height: 300, backgroundColor: '#FFE8A0', top: -150, right: -100 },
-  blob2: { width: 250, height: 250, backgroundColor: '#C8EDDA', bottom: 50, left: -100 },
+  blob1: { width: 300, height: 300, backgroundColor: '#FFFFFF', top: -150, right: -100 },
+  blob2: { width: 250, height: 250, backgroundColor: '#FFFFFF', bottom: 50, left: -100 },
 
   headerArea: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, marginBottom: 10 },
   backBtnWrap: { position: 'relative' },
-  backBtnShadow: { position: 'absolute', top: 4, left: 4, right: -4, bottom: -4, backgroundColor: '#A8E6CF', borderRadius: 16, opacity: 0.6 },
-  backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 22, fontWeight: '900', color: '#2D4A30' },
+  backBtnShadow: { position: 'absolute', top: 4, left: 4, right: -4, bottom: -4, backgroundColor: '#FFFFFF', borderRadius: 16, opacity: 0.6 },
+  backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#16A34A' },
 
   container: { padding: 24, paddingTop: 10 },
 
   heroWrap: { position: 'relative', marginBottom: 28 },
-  heroShadow: { position: 'absolute', top: 8, left: 8, right: -8, bottom: -8, backgroundColor: '#A8E6CF', borderRadius: 32, opacity: 0.5 },
-  hero: { backgroundColor: '#FFF', borderRadius: 32, padding: 24, alignItems: 'center', overflow: 'hidden' },
+  heroShadow: { position: 'absolute', top: 8, left: 8, right: -8, bottom: -8, backgroundColor: '#FFFFFF', borderRadius: 32, opacity: 0.5 },
+  hero: { backgroundColor: '#FFFFFF', borderRadius: 32, padding: 24, alignItems: 'center', overflow: 'hidden' },
   heroHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 60, backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 32, borderTopRightRadius: 32 },
-  heroTitle: { fontSize: 22, fontWeight: '900', color: '#2D4A30', marginTop: 12 },
-  heroSub: { fontSize: 13, color: '#6B9A80', textAlign: 'center', marginTop: 8, fontWeight: '700', lineHeight: 20 },
+  heroTitle: { fontSize: 22, fontWeight: '900', color: '#16A34A', marginTop: 12 },
+  heroSub: { fontSize: 13, color: '#22C55E', textAlign: 'center', marginTop: 8, fontWeight: '700', lineHeight: 20 },
 
-  sectionHeader: { fontSize: 17, fontWeight: '900', color: '#2D4A30', marginBottom: 16, marginTop: 10 },
+  sectionHeader: { fontSize: 17, fontWeight: '900', color: '#16A34A', marginBottom: 16, marginTop: 10 },
 
   faqWrap: { position: 'relative', marginBottom: 18 },
   faqShadow: { position: 'absolute', top: 6, left: 6, right: -6, bottom: -6, borderRadius: 24, opacity: 0.6 },
-  faqCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, overflow: 'hidden' },
+  faqCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, overflow: 'hidden' },
   faqHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 30, backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 24, borderTopRightRadius: 24 },
-  faqQ: { fontSize: 15, fontWeight: '900', color: '#2D4A30', marginBottom: 8 },
-  faqA: { fontSize: 14, color: '#6B9A80', fontWeight: '600', lineHeight: 20 },
+  faqQ: { fontSize: 15, fontWeight: '900', color: '#16A34A', marginBottom: 8 },
+  faqA: { fontSize: 14, color: '#22C55E', fontWeight: '600', lineHeight: 20 },
 
   contactWrap: { position: 'relative' },
-  contactShadow: { position: 'absolute', top: 8, left: 8, right: -8, bottom: -8, backgroundColor: '#FFE0CC', borderRadius: 32, opacity: 0.5 },
-  contactCard: { backgroundColor: '#FFF', borderRadius: 32, padding: 24, alignItems: 'center', overflow: 'hidden' },
+  contactShadow: { position: 'absolute', top: 8, left: 8, right: -8, bottom: -8, backgroundColor: '#FFFFFF', borderRadius: 32, opacity: 0.5 },
+  contactCard: { backgroundColor: '#FFFFFF', borderRadius: 32, padding: 24, alignItems: 'center', overflow: 'hidden' },
   contactHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 50, backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 32, borderTopRightRadius: 32 },
-  contactTitle: { fontSize: 18, fontWeight: '900', color: '#2D4A30' },
-  contactSub: { fontSize: 13, color: '#8AB8A0', textAlign: 'center', marginTop: 6, fontWeight: '700', marginBottom: 20 },
+  contactTitle: { fontSize: 18, fontWeight: '900', color: '#16A34A' },
+  contactSub: { fontSize: 13, color: '#DCFCE7', textAlign: 'center', marginTop: 6, fontWeight: '700', marginBottom: 20 },
 
   emailBtnWrap: { position: 'relative', width: '100%' },
-  emailBtnShadow: { position: 'absolute', top: 5, left: 5, right: -5, bottom: -5, backgroundColor: '#6BCBA5', borderRadius: 20, opacity: 0.6 },
-  emailBtn: { backgroundColor: '#3DBF87', paddingVertical: 18, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, overflow: 'hidden' },
+  emailBtnShadow: { position: 'absolute', top: 5, left: 5, right: -5, bottom: -5, backgroundColor: '#DCFCE7', borderRadius: 20, opacity: 0.6 },
+  emailBtn: { backgroundColor: '#22C55E', paddingVertical: 18, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, overflow: 'hidden' },
   emailBtnHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 26, backgroundColor: 'rgba(255,255,255,0.3)', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
-  emailBtnText: { color: '#FFF', fontSize: 16, fontWeight: '900' },
+  emailBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
 });

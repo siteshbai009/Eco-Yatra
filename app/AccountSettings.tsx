@@ -28,7 +28,7 @@ export default function AccountSettings() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#E8F4FF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
       {/* Background blobs */}
       <View style={[styles.blob, styles.blob1]} />
@@ -40,7 +40,7 @@ export default function AccountSettings() {
           <View style={styles.backBtnWrap}>
             <View style={styles.backBtnShadow} />
             <View style={styles.backBtn}>
-              <Feather name="arrow-left" size={24} color="#2D8A5F" />
+              <Feather name="arrow-left" size={24} color="#22C55E" />
             </View>
           </View>
         </TouchableOpacity>
@@ -68,8 +68,8 @@ export default function AccountSettings() {
                   <Switch
                     value={isProfilePublic}
                     onValueChange={setIsProfilePublic}
-                    thumbColor={isProfilePublic ? '#3DBF87' : '#FFD4E8'}
-                    trackColor={{ false: '#EEF2F5', true: '#A8D8FF' }}
+                    thumbColor={isProfilePublic ? '#22C55E' : '#FFFFFF'}
+                    trackColor={{ false: '#FFFFFF', true: '#FFFFFF' }}
                   />
                </View>
             </View>
@@ -77,7 +77,7 @@ export default function AccountSettings() {
             <View style={styles.infoBubbleWrap}>
               <View style={styles.infoBubbleShadow} />
               <View style={styles.infoBubble}>
-                <Feather name="info" size={16} color="#6B9A80" />
+                <Feather name="info" size={16} color="#22C55E" />
                 <Text style={styles.note}>
                   {isProfilePublic
                     ? 'Your stats and trips will be visible on the leaderboard to other members.'
@@ -101,41 +101,41 @@ export default function AccountSettings() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#E8F4FF' },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
   blob: { position: 'absolute', borderRadius: 999, opacity: 0.4 },
-  blob1: { width: 250, height: 250, backgroundColor: '#D4C8F5', top: -100, left: -100 },
-  blob2: { width: 200, height: 200, backgroundColor: '#C8EDDA', bottom: 100, right: -100 },
+  blob1: { width: 250, height: 250, backgroundColor: '#FFFFFF', top: -100, left: -100 },
+  blob2: { width: 200, height: 200, backgroundColor: '#FFFFFF', bottom: 100, right: -100 },
 
   headerArea: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, marginBottom: 10 },
   backBtnWrap: { position: 'relative' },
-  backBtnShadow: { position: 'absolute', top: 4, left: 4, right: -4, bottom: -4, backgroundColor: '#A8E6CF', borderRadius: 16, opacity: 0.6 },
-  backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 22, fontWeight: '900', color: '#2D4A30' },
+  backBtnShadow: { position: 'absolute', top: 4, left: 4, right: -4, bottom: -4, backgroundColor: '#FFFFFF', borderRadius: 16, opacity: 0.6 },
+  backBtn: { width: 44, height: 44, borderRadius: 16, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#16A34A' },
 
   container: { padding: 24 },
   
   cardWrap: { position: 'relative', marginBottom: 28 },
-  cardShadow: { position: 'absolute', top: 10, left: 10, right: -10, bottom: -10, backgroundColor: '#A8D8FF', borderRadius: 32, opacity: 0.5 },
-  card: { backgroundColor: '#FFF', borderRadius: 32, padding: 24, overflow: 'hidden' },
+  cardShadow: { position: 'absolute', top: 10, left: 10, right: -10, bottom: -10, backgroundColor: '#FFFFFF', borderRadius: 32, opacity: 0.5 },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 32, padding: 24, overflow: 'hidden' },
   cardHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 60, backgroundColor: 'rgba(255,255,255,0.8)', borderTopLeftRadius: 32, borderTopRightRadius: 32 },
 
-  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#2D4A30', marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#16A34A', marginBottom: 20 },
   
   rowWrap: { position: 'relative', marginBottom: 20 },
-  rowShadow: { position: 'absolute', top: 4, left: 4, right: -4, bottom: -4, backgroundColor: '#F0FAFF', borderRadius: 20, opacity: 0.8 },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F9FCFF', padding: 18, borderRadius: 20 },
+  rowShadow: { position: 'absolute', top: 4, left: 4, right: -4, bottom: -4, backgroundColor: '#FFFFFF', borderRadius: 20, opacity: 0.8 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', padding: 18, borderRadius: 20 },
   labelCol: { flex: 1 },
-  label: { fontSize: 16, fontWeight: '800', color: '#2D4A30' },
-  subtext: { fontSize: 12, color: '#8AB8A0', marginTop: 2, fontWeight: '700' },
+  label: { fontSize: 16, fontWeight: '800', color: '#16A34A' },
+  subtext: { fontSize: 12, color: '#DCFCE7', marginTop: 2, fontWeight: '700' },
 
   infoBubbleWrap: { position: 'relative' },
-  infoBubbleShadow: { position: 'absolute', top: 3, left: 3, right: -3, bottom: -3, backgroundColor: '#C8EDDA', borderRadius: 16, opacity: 0.5 },
-  infoBubble: { flexDirection: 'row', gap: 10, backgroundColor: '#F0FAF5', padding: 16, borderRadius: 16 },
-  note: { flex: 1, color: '#5A7A60', fontSize: 13, fontWeight: '600', lineHeight: 18 },
+  infoBubbleShadow: { position: 'absolute', top: 3, left: 3, right: -3, bottom: -3, backgroundColor: '#FFFFFF', borderRadius: 16, opacity: 0.5 },
+  infoBubble: { flexDirection: 'row', gap: 10, backgroundColor: '#FFFFFF', padding: 16, borderRadius: 16 },
+  note: { flex: 1, color: '#22C55E', fontSize: 13, fontWeight: '600', lineHeight: 18 },
 
   saveBtnWrap: { position: 'relative' },
-  saveBtnShadow: { position: 'absolute', top: 6, left: 6, right: -6, bottom: -6, backgroundColor: '#6BCBA5', borderRadius: 22, opacity: 0.6 },
-  saveBtn: { backgroundColor: '#3DBF87', paddingVertical: 18, alignItems: 'center', borderRadius: 22, overflow: 'hidden' },
+  saveBtnShadow: { position: 'absolute', top: 6, left: 6, right: -6, bottom: -6, backgroundColor: '#DCFCE7', borderRadius: 22, opacity: 0.6 },
+  saveBtn: { backgroundColor: '#22C55E', paddingVertical: 18, alignItems: 'center', borderRadius: 22, overflow: 'hidden' },
   saveBtnHighlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 26, backgroundColor: 'rgba(255,255,255,0.3)', borderTopLeftRadius: 22, borderTopRightRadius: 22 },
-  saveBtnText: { color: '#FFF', fontSize: 17, fontWeight: '900' },
+  saveBtnText: { color: '#FFFFFF', fontSize: 17, fontWeight: '900' },
 });

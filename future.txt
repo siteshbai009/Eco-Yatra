@@ -1,9 +1,0 @@
-admin panel(ongoing)
-database{supabase}(upcoming)
-
-
-
-
-
-
-DFD to be moodified(Make circle)
